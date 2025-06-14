@@ -160,8 +160,14 @@ export default function GhostInterviewer() {
           >
             <Send className="w-6 h-6" />
           </button>
+          <button
+            onClick={() => setIsInterviewComplete(true)}
+            className="ml-auto px-4 py-2 bg-gray-200 rounded-2xl text-gray-700 hover:bg-gray-300"
+          >
+            Finish Interview
+          </button>
         </div>
       </div>
     </div>
   );
-} 
+}
