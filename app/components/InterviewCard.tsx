@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, AlertCircle, HelpCircle, ArrowRight } from 'lucide-react';
+import { interviewQuestions, InterviewQuestion } from '../data/interviewQuestions';
 
 // Types
 type FeedbackType = 'success' | 'warning' | 'info';
@@ -9,10 +10,6 @@ type FeedbackType = 'success' | 'warning' | 'info';
 interface FeedbackItem {
   type: FeedbackType;
   text: string;
-}
-
-interface InterviewCardProps {
-  initialQuestion?: string;
 }
 
 // Constants
@@ -31,25 +28,73 @@ const SAMPLE_FEEDBACK: FeedbackItem[] = [
   },
 ];
 
-const DEFAULT_QUESTION = 'What are your greatest strengths and how do they align with this position?';
-
 // Component
-export default function InterviewCard({ initialQuestion = DEFAULT_QUESTION }: InterviewCardProps) {
+export default function InterviewCard() {
   // State
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
+  const [isInterviewComplete, setIsInterviewComplete] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [response, setResponse] = useState('');
+  const [hasAnswerSubmitted, setHasAnswerSubmitted] = useState(false);
+
+  // Current question
+  const currentQuestion = interviewQuestions[currentQuestionIndex];
 
   // Handlers
-  const handleStartInterview = useCallback(() => {
+  const handleStartInterview = () => {
+    console.log('Starting interview');
     setIsInterviewStarted(true);
-  }, []);
+    setIsInterviewComplete(false);
+    setCurrentQuestionIndex(0);
+    setResponse('');
+    setHasAnswerSubmitted(false); // Reset on new interview
+  };
 
-  const handleResponseChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleResponseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setResponse(e.target.value);
-  }, []);
+  };
+
+  const handleNextQuestion = () => {
+    if (response.trim() === '') {
+      alert('Please provide an answer before proceeding.');
+      return;
+    }
+    setHasAnswerSubmitted(true);
+    // The AI feedback will now show. User can review before moving to next question.
+    // To move to the next question immediately after submitting, move the following block
+    // outside of this conditional rendering logic.
+    // For now, let's keep it this way to ensure feedback is shown.
+
+    // If you want to automatically go to the next question/complete interview
+    // after feedback is shown, you'd need another button or a timeout.
+    // For this task, we will simply show the feedback after submission.
+  };
+
+  const proceedToNextQuestion = () => {
+    if (currentQuestionIndex < interviewQuestions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+      setResponse('');
+      setHasAnswerSubmitted(false); // Reset for next question
+    } else {
+      setIsInterviewComplete(true);
+      setHasAnswerSubmitted(false); // Reset on interview complete
+    }
+  };
+
+  const handleSaveFeedback = () => {
+    console.log('Saving feedback for question:', currentQuestion.id);
+  };
+
+  const handleRestartInterview = () => {
+    setIsInterviewStarted(false);
+    setIsInterviewComplete(false);
+    setCurrentQuestionIndex(0);
+    setResponse('');
+    setHasAnswerSubmitted(false);
+  };
 
   // Helper functions
-  const getFeedbackIcon = useCallback((type: FeedbackType) => {
+  const getFeedbackIcon = (type: FeedbackType) => {
     const iconProps = { className: 'w-5 h-5' };
     
     switch (type) {
@@ -60,25 +105,91 @@ export default function InterviewCard({ initialQuestion = DEFAULT_QUESTION }: In
       case 'info':
         return <HelpCircle {...iconProps} className={`${iconProps.className} text-blue-500`} />;
     }
-  }, []);
+  };
 
   // Hero Page View
   if (!isInterviewStarted) {
     return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <div className="text-center">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              Ghost Interviewer
+              <span className="text-teal-600"> 👻</span>
+            </h1>
+            <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto mb-12">
+              Practice interviews. Reflect deeply. Get better.
+            </p>
+            
+            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-8 mb-12">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                Why Ghost Interviewer?
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="bg-teal-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-teal-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Practice Anywhere</h3>
+                  <p className="text-gray-600">Get interview-ready at your own pace, anytime.</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-teal-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-8 h-8 text-teal-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Instant Feedback</h3>
+                  <p className="text-gray-600">Receive AI-powered feedback on your responses.</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-teal-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <HelpCircle className="w-8 h-8 text-teal-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Learn & Improve</h3>
+                  <p className="text-gray-600">Track your progress and enhance your skills.</p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleStartInterview}
+              className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-teal-600 rounded-xl hover:bg-teal-700 transition-colors shadow-lg hover:shadow-xl"
+            >
+              Start Your Interview
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Interview Complete View
+  if (isInterviewComplete) {
+    return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="max-w-xl w-full bg-white rounded-xl shadow-md p-8 text-center space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            Ghost Interviewer 👻
-          </h1>
-          <p className="text-xl text-gray-600">
-            Practice interviews. Reflect deeply. Get better.
+          <h2 className="text-3xl font-bold text-gray-900">
+            Interview Complete! 🎉
+          </h2>
+          <p className="text-lg text-gray-600">
+            You've completed all the interview questions. Great job!
           </p>
-          <button
-            onClick={handleStartInterview}
-            className="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-colors"
-          >
-            Start Interview
-          </button>
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={handleRestartInterview}
+              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-colors"
+            >
+              Start New Interview
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveFeedback}
+              className="w-full border border-gray-300 bg-white text-gray-700 font-semibold py-3 px-8 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              Review Feedback
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -86,64 +197,98 @@ export default function InterviewCard({ initialQuestion = DEFAULT_QUESTION }: In
 
   // Interview View
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      {/* Main Interview Card */}
-      <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6">
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6">
         {/* Question Section */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            AI Interviewer:
-          </label>
-          <p className="text-lg font-semibold text-gray-900">
-            {initialQuestion}
-          </p>
+        <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-500">{currentQuestion.category}</span>
+            <span className="text-sm font-medium text-gray-500">Question {currentQuestionIndex + 1} of {interviewQuestions.length}</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {currentQuestion.question}
+          </h3>
         </div>
 
         {/* Response Section */}
         <div className="space-y-2">
-          <label 
-            htmlFor="response" 
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700">
             Your Response:
           </label>
           <textarea
-            id="response"
             value={response}
             onChange={handleResponseChange}
+            className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
             placeholder="Type your response here..."
-            className="w-full h-32 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none"
           />
         </div>
 
-        {/* Feedback Section */}
-        <div className="space-y-3">
+        {/* 
+        // Tips Section
+        <div className="space-y-2">
           <h3 className="text-sm font-medium text-gray-700">
-            AI Feedback:
+            Tips:
           </h3>
-          <div className="bg-blue-50 p-4 rounded-lg space-y-3">
-            {SAMPLE_FEEDBACK.map((item, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                {getFeedbackIcon(item.type)}
-                <p className="text-sm text-gray-700">{item.text}</p>
-              </div>
+          <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+            {currentQuestion.tips.map((tip, index) => (
+              <li key={index}>{tip}</li>
             ))}
-          </div>
+          </ul>
         </div>
-      </div>
+        */}
 
-      {/* Action Buttons */}
-      <div className="max-w-xl mx-auto flex gap-4 mt-6">
-        <button
-          className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
-        >
-          Next Question
-        </button>
-        <button
-          className="flex-1 border border-gray-300 bg-white text-gray-700 px-6 py-2 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-        >
-          Save Feedback
-        </button>
+        {/* Feedback Section - Conditionally rendered */}
+        {hasAnswerSubmitted && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-700">
+              AI Feedback:
+            </h3>
+            <div className="space-y-3">
+              {SAMPLE_FEEDBACK.map((feedback, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+                >
+                  {getFeedbackIcon(feedback.type)}
+                  <p className="text-sm text-gray-600">{feedback.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="max-w-xl mx-auto flex gap-4 mt-6">
+          {!hasAnswerSubmitted && (
+            <button
+              type="button"
+              onClick={handleNextQuestion}
+              className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
+            >
+              Submit Answer
+            </button>
+          )}
+
+          {hasAnswerSubmitted && (
+            <button
+              type="button"
+              onClick={proceedToNextQuestion}
+              className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
+            >
+              {currentQuestionIndex === interviewQuestions.length - 1 ? 'Finish Interview' : 'Next Question'}
+            </button>
+          )}
+
+          {hasAnswerSubmitted && (
+            <button
+              type="button"
+              onClick={handleSaveFeedback}
+              className="flex-1 border border-gray-300 bg-white text-gray-700 px-6 py-2 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+            >
+              Save Feedback
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
