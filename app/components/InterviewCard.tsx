@@ -198,96 +198,111 @@ export default function InterviewCard() {
   // Interview View
   return (
     <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6">
-        {/* Question Section */}
-        <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-500">{currentQuestion.category}</span>
-            <span className="text-sm font-medium text-gray-500">Question {currentQuestionIndex + 1} of {interviewQuestions.length}</span>
+      <div className="max-w-2xl mx-auto space-y-4">
+        {/* Progress Indicator */}
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+            <span>Question {currentQuestionIndex + 1} of {interviewQuestions.length}</span>
+            <span>{Math.round(((currentQuestionIndex + 1) / interviewQuestions.length) * 100)}% Complete</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            {currentQuestion.question}
-          </h3>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentQuestionIndex + 1) / interviewQuestions.length) * 100}%` }}
+            />
+          </div>
         </div>
 
-        {/* Response Section */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Your Response:
-          </label>
-          <textarea
-            value={response}
-            onChange={handleResponseChange}
-            className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
-            placeholder="Type your response here..."
-          />
-        </div>
-
-        {/* 
-        // Tips Section
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-700">
-            Tips:
-          </h3>
-          <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-            {currentQuestion.tips.map((tip, index) => (
-              <li key={index}>{tip}</li>
-            ))}
-          </ul>
-        </div>
-        */}
-
-        {/* Feedback Section - Conditionally rendered */}
-        {hasAnswerSubmitted && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-700">
-              AI Feedback:
-            </h3>
-            <div className="space-y-3">
-              {SAMPLE_FEEDBACK.map((feedback, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
-                >
-                  {getFeedbackIcon(feedback.type)}
-                  <p className="text-sm text-gray-600">{feedback.text}</p>
-                </div>
-              ))}
+        <div className="bg-white rounded-xl shadow-md p-6 space-y-6">
+          {/* Question Section */}
+          <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-500">{currentQuestion.category}</span>
             </div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {currentQuestion.question}
+            </h3>
           </div>
-        )}
 
-        {/* Action Buttons */}
-        <div className="max-w-xl mx-auto flex gap-4 mt-6">
-          {!hasAnswerSubmitted && (
-            <button
-              type="button"
-              onClick={handleNextQuestion}
-              className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
-            >
-              Submit Answer
-            </button>
-          )}
+          {/* Response Section */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Your Response:
+            </label>
+            <textarea
+              value={response}
+              onChange={handleResponseChange}
+              className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+              placeholder="Type your response here..."
+            />
+          </div>
 
+          {/* 
+          // Tips Section
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-700">
+              Tips:
+            </h3>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+              {currentQuestion.tips.map((tip, index) => (
+                <li key={index}>{tip}</li>
+              ))}
+            </ul>
+          </div>
+          */}
+
+          {/* Feedback Section - Conditionally rendered */}
           {hasAnswerSubmitted && (
-            <button
-              type="button"
-              onClick={proceedToNextQuestion}
-              className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
-            >
-              {currentQuestionIndex === interviewQuestions.length - 1 ? 'Finish Interview' : 'Next Question'}
-            </button>
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-gray-700">
+                AI Feedback:
+              </h3>
+              <div className="space-y-3">
+                {SAMPLE_FEEDBACK.map((feedback, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+                  >
+                    {getFeedbackIcon(feedback.type)}
+                    <p className="text-sm text-gray-600">{feedback.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
-          {hasAnswerSubmitted && (
-            <button
-              type="button"
-              onClick={handleSaveFeedback}
-              className="flex-1 border border-gray-300 bg-white text-gray-700 px-6 py-2 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-            >
-              Save Feedback
-            </button>
-          )}
+          {/* Action Buttons */}
+          <div className="max-w-xl mx-auto flex gap-4 mt-6">
+            {!hasAnswerSubmitted && (
+              <button
+                type="button"
+                onClick={handleNextQuestion}
+                className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
+              >
+                Submit Answer
+              </button>
+            )}
+
+            {hasAnswerSubmitted && (
+              <button
+                type="button"
+                onClick={proceedToNextQuestion}
+                className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
+              >
+                {currentQuestionIndex === interviewQuestions.length - 1 ? 'Finish Interview' : 'Next Question'}
+              </button>
+            )}
+
+            {hasAnswerSubmitted && (
+              <button
+                type="button"
+                onClick={handleSaveFeedback}
+                className="flex-1 border border-gray-300 bg-white text-gray-700 px-6 py-2 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              >
+                Save Feedback
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
