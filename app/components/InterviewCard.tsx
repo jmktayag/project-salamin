@@ -1,7 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { CheckCircle2, AlertCircle, HelpCircle, ArrowRight } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import {
+  CheckCircle2,
+  AlertCircle,
+  HelpCircle,
+  ArrowRight,
+  Mic,
+  MicOff,
+} from 'lucide-react';
 import { interviewQuestions } from '../data/interviewQuestions';
 
 // Types
@@ -36,6 +43,8 @@ export default function InterviewCard() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [response, setResponse] = useState('');
   const [hasAnswerSubmitted, setHasAnswerSubmitted] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   // Current question
   const currentQuestion = interviewQuestions[currentQuestionIndex];
@@ -52,6 +61,42 @@ export default function InterviewCard() {
 
   const handleResponseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setResponse(e.target.value);
+  };
+
+  const startListening = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition not supported in this browser.');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.onresult = event => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0])
+        .map(result => result.transcript)
+        .join(' ');
+      setResponse(prev => (prev ? prev + ' ' : '') + transcript);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   };
 
   const handleNextQuestion = () => {
@@ -226,9 +271,19 @@ export default function InterviewCard() {
 
           {/* Response Section */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Your Response:
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Your Response:
+              </label>
+              <button
+                type="button"
+                onClick={toggleListening}
+                aria-label={isListening ? 'Stop recording' : 'Start recording'}
+                className="p-2 border rounded-full text-gray-600 hover:bg-gray-100"
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+            </div>
             <textarea
               value={response}
               onChange={handleResponseChange}

@@ -7,6 +7,7 @@ An AI-powered interview practice application that helps users improve their inte
 - 🤖 AI-powered interview questions
 - 💬 Interactive response system
 - 📝 Real-time feedback
+- 🎙️ Speech-to-text answers
 - 🎯 STAR method guidance
 - 📱 Mobile-responsive design
 
