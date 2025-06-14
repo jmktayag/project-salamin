@@ -23,7 +23,7 @@ An AI-powered interview practice application that helps users improve their inte
 1. Clone the repository:
 ```bash
 git clone [repository-url]
-cd ghost-interviewer
+cd project-salamin
 ```
 
 2. Install dependencies:
