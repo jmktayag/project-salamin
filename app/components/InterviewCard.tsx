@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { CheckCircle2, AlertCircle, HelpCircle, ArrowRight } from 'lucide-react';
-import { interviewQuestions, InterviewQuestion } from '../data/interviewQuestions';
+import { interviewQuestions } from '../data/interviewQuestions';
 
 // Types
 type FeedbackType = 'success' | 'warning' | 'info';
@@ -110,12 +110,12 @@ export default function InterviewCard() {
   // Hero Page View
   if (!isInterviewStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+      <div className="min-h-screen bg-gradient-to-b from-primary/20 to-secondary/20">
+        <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Ghost Interviewer
-              <span className="text-teal-600"> 👻</span>
+              <span className="text-primary"> 👻</span>
             </h1>
             <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto mb-12">
               Practice interviews. Reflect deeply. Get better.
@@ -127,22 +127,22 @@ export default function InterviewCard() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="text-center">
-                  <div className="bg-teal-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-teal-600" />
+                  <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Practice Anywhere</h3>
                   <p className="text-gray-600">Get interview-ready at your own pace, anytime.</p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-teal-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <AlertCircle className="w-8 h-8 text-teal-600" />
+                  <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Instant Feedback</h3>
                   <p className="text-gray-600">Receive AI-powered feedback on your responses.</p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-teal-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <HelpCircle className="w-8 h-8 text-teal-600" />
+                  <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <HelpCircle className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Learn & Improve</h3>
                   <p className="text-gray-600">Track your progress and enhance your skills.</p>
@@ -152,7 +152,7 @@ export default function InterviewCard() {
 
             <button
               onClick={handleStartInterview}
-              className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-teal-600 rounded-xl hover:bg-teal-700 transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors shadow-lg hover:shadow-xl"
             >
               Start Your Interview
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -172,13 +172,13 @@ export default function InterviewCard() {
             Interview Complete! 🎉
           </h2>
           <p className="text-lg text-gray-600">
-            You've completed all the interview questions. Great job!
+            You&apos;ve completed all the interview questions. Great job!
           </p>
           <div className="space-y-4">
             <button
               type="button"
               onClick={handleRestartInterview}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-colors"
+              className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-colors"
             >
               Start New Interview
             </button>
@@ -207,7 +207,7 @@ export default function InterviewCard() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-primary h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentQuestionIndex + 1) / interviewQuestions.length) * 100}%` }}
             />
           </div>
@@ -232,7 +232,7 @@ export default function InterviewCard() {
             <textarea
               value={response}
               onChange={handleResponseChange}
-              className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+              className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               placeholder="Type your response here..."
             />
           </div>
@@ -277,7 +277,7 @@ export default function InterviewCard() {
               <button
                 type="button"
                 onClick={handleNextQuestion}
-                className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
+                className="flex-1 bg-primary text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-dark transition-colors"
               >
                 Submit Answer
               </button>
@@ -287,7 +287,7 @@ export default function InterviewCard() {
               <button
                 type="button"
                 onClick={proceedToNextQuestion}
-                className="flex-1 bg-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-teal-700 transition-colors"
+                className="flex-1 bg-primary text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-dark transition-colors"
               >
                 {currentQuestionIndex === interviewQuestions.length - 1 ? 'Finish Interview' : 'Next Question'}
               </button>

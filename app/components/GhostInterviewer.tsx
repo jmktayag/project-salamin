@@ -69,7 +69,7 @@ export default function GhostInterviewer() {
           </p>
           <button
             onClick={handleStartInterview}
-            className="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition-colors"
+            className="bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition-colors"
           >
             Start Interview
           </button>
@@ -90,7 +90,7 @@ export default function GhostInterviewer() {
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 font-medium capitalize ${
                     activeTab === tab
-                      ? 'text-teal-600 border-b-2 border-teal-600'
+                      ? 'text-primary border-b-2 border-primary'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
@@ -131,7 +131,7 @@ export default function GhostInterviewer() {
             <div
               className={`max-w-[80%] rounded-2xl p-4 shadow-md ${
                 message.sender === 'user'
-                  ? 'bg-teal-600 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-white text-gray-800'
               }`}
             >
@@ -151,12 +151,12 @@ export default function GhostInterviewer() {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Type your response..."
-            className="flex-1 border rounded-2xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="flex-1 border rounded-2xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           />
           <button
             onClick={handleSendMessage}
-            className="p-2 text-teal-600 hover:text-teal-700"
+            className="p-2 text-primary hover:text-primary-dark"
           >
             <Send className="w-6 h-6" />
           </button>
