@@ -55,7 +55,6 @@ ghost-interviewer/
 │   ├── layout.tsx
 │   ├── page.tsx
 │   └── globals.css
-├── public/
 ├── package.json
 └── README.md
 ```
