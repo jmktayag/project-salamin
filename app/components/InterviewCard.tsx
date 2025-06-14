@@ -8,8 +8,11 @@ import {
   ArrowRight,
   Mic,
   MicOff,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { interviewQuestions } from '../data/interviewQuestions';
+import { TextToSpeech } from '../utils/TextToSpeech';
 
 // Types
 type FeedbackType = 'success' | 'warning' | 'info';
@@ -74,7 +77,20 @@ export default function InterviewCard() {
   const [response, setResponse] = useState('');
   const [hasAnswerSubmitted, setHasAnswerSubmitted] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsRef = useRef<TextToSpeech | null>(null);
+
+  // Initialize TTS
+  React.useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('Gemini API key not found in environment variables');
+      return;
+    }
+    ttsRef.current = new TextToSpeech(apiKey);
+  }, []);
 
   // Current question
   const currentQuestion = interviewQuestions[currentQuestionIndex];
@@ -165,6 +181,32 @@ export default function InterviewCard() {
     setCurrentQuestionIndex(0);
     setResponse('');
     setHasAnswerSubmitted(false);
+  };
+
+  const speakText = async (text: string) => {
+    if (!ttsRef.current) {
+      console.error('TTS not initialized');
+      return;
+    }
+
+    try {
+      setIsSpeaking(true);
+      const audioBuffer = await ttsRef.current.generateSpeech(text);
+      const audioBlob = new Blob([audioBuffer], { type: 'audio/wav' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        audioRef.current.onended = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        await audioRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error generating speech:', error);
+      setIsSpeaking(false);
+    }
   };
 
   // Helper functions
@@ -292,6 +334,15 @@ export default function InterviewCard() {
           <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-500">{currentQuestion.category}</span>
+              <button
+                type="button"
+                onClick={() => speakText(currentQuestion.question)}
+                disabled={isSpeaking}
+                className="p-2 border rounded-full text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                aria-label={isSpeaking ? 'Stop speaking' : 'Speak question'}
+              >
+                {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
             </div>
             <h3 className="text-lg font-semibold text-gray-900">
               {currentQuestion.question}
@@ -387,6 +438,9 @@ export default function InterviewCard() {
               </button>
             )}
           </div>
+
+          {/* Hidden audio element */}
+          <audio ref={audioRef} className="hidden" />
         </div>
       </div>
     </div>
