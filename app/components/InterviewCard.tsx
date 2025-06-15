@@ -393,12 +393,6 @@ export default function InterviewCard() {
   if (isInterviewComplete) {
     return (
       <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Interview Complete</h2>
-          <p className="text-gray-600 mt-2">
-            Thank you for completing the interview. Here's your analysis:
-          </p>
-        </div>
         
         {isAnalyzing ? (
           <div className="text-center py-8">
@@ -406,27 +400,16 @@ export default function InterviewCard() {
             <p className="text-gray-600 mt-4">Generating your interview analysis...</p>
           </div>
         ) : analysis ? (
-          <InterviewSummary {...analysis} />
+          <InterviewSummary 
+            {...analysis} 
+            onNewInterview={handleRestartInterview}
+            onReviewFeedback={() => setShowFeedback(true)}
+          />
         ) : (
           <div className="text-center py-8">
             <p className="text-gray-600">No analysis available.</p>
           </div>
         )}
-
-        <div className="flex justify-center gap-4 mt-8">
-          <button
-            onClick={handleRestartInterview}
-            className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-          >
-            Start New Interview
-          </button>
-          <button
-            onClick={() => setShowFeedback(true)}
-            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Review All Feedback
-          </button>
-        </div>
       </div>
     );
   }
