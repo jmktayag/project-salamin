@@ -10,6 +10,9 @@ import {
   MicOff,
   Volume2,
   VolumeX,
+  Square,
+  CheckCircle,
+  Lightbulb,
 } from 'lucide-react';
 import { interviewQuestions } from '../data/interviewQuestions';
 import { TextToSpeech } from '../utils/TextToSpeech';
@@ -90,13 +93,17 @@ export default function InterviewCard() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [response, setResponse] = useState('');
   const [hasAnswerSubmitted, setHasAnswerSubmitted] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
+  const [isListening, setIsListening] = useState(false);
   
   // Refs for managing speech recognition and audio playback
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsRef = useRef<TextToSpeech | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Initialize Text-to-Speech with API key
   React.useEffect(() => {
@@ -124,60 +131,9 @@ export default function InterviewCard() {
   };
 
   /**
-   * Updates the response text when user types
-   */
-  const handleResponseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setResponse(e.target.value);
-  };
-
-  /**
-   * Starts speech recognition to capture user's voice input
-   */
-  const startListening = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('Speech recognition not supported in this browser.');
-      return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)  // Get most confident alternative for each result
-        .join(' ');
-      setResponse(prev => (prev ? prev + ' ' : '') + transcript);
-    };
-    recognition.onend = () => setIsListening(false);
-    recognitionRef.current = recognition;
-    recognition.start();
-    setIsListening(true);
-  };
-
-  /**
-   * Stops the active speech recognition session
-   */
-  const stopListening = () => {
-    recognitionRef.current?.stop();
-    setIsListening(false);
-  };
-
-  /**
-   * Toggles speech recognition on/off
-   */
-  const toggleListening = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
-  };
-
-  /**
    * Handles submission of the current answer and shows feedback
    */
-  const handleNextQuestion = () => {
+  const handleSubmit = () => {
     if (response.trim() === '') {
       alert('Please provide an answer before proceeding.');
       return;
@@ -262,6 +218,55 @@ export default function InterviewCard() {
         return <AlertCircle {...iconProps} className={`${iconProps.className} text-yellow-500`} />;
       case 'info':
         return <HelpCircle {...iconProps} className={`${iconProps.className} text-blue-500`} />;
+    }
+  };
+
+  /**
+   * Starts speech recognition to capture user's voice input
+   */
+  const startListening = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition not supported in this browser.');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0].transcript)
+        .join(' ');
+      setResponse(prev => (prev ? prev + ' ' : '') + transcript);
+    };
+    recognition.onend = () => {
+      setIsListening(false);
+      setIsRecording(false);
+    };
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+    setIsRecording(true);
+  };
+
+  /**
+   * Stops the active speech recognition session
+   */
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+    setIsRecording(false);
+  };
+
+  /**
+   * Toggles speech recognition on/off
+   */
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
     }
   };
 
@@ -356,7 +361,7 @@ export default function InterviewCard() {
   // Interview View
   return (
     <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="w-full sm:max-w-2xl mx-auto px-4 space-y-4">
         {/* Progress Indicator */}
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
@@ -371,90 +376,110 @@ export default function InterviewCard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6 space-y-6">
+        <div className="bg-white rounded-xl shadow-md p-6 space-y-6 transition-opacity duration-300">
           {/* Question Section */}
-          <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-500">{currentQuestion.category}</span>
-              <button
-                type="button"
-                onClick={() => speakText(currentQuestion.question)}
-                disabled={isSpeaking}
-                className="p-2 border rounded-full text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-                aria-label={isSpeaking ? 'Stop speaking' : 'Speak question'}
-              >
-                {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </button>
+          <div className="mb-6 space-y-1">
+            {/* Category Label */}
+            <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+              {currentQuestion.category}
+            </span>
+
+            {/* Question Content */}
+            <div className="mt-2 bg-gray-50 rounded-lg p-4 space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {currentQuestion.question}
+              </h3>
+              <p className="text-sm text-gray-600">
+                Example: "I'm a senior iOS developer with 8+ years of experience building scalable apps."
+              </p>
+              
+              {/* Audio Controls */}
+              <div className="flex justify-end">
+                {ttsRef.current && (
+                  <button
+                    type="button"
+                    onClick={() => speakText(currentQuestion.question)}
+                    disabled={isSpeaking}
+                    className="w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
+                    aria-label="Play question audio"
+                    title="Play question audio"
+                  >
+                    {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  </button>
+                )}
+              </div>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {currentQuestion.question}
-            </h3>
           </div>
 
           {/* Response Section */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Your Response:
+          <div className="mt-6 space-y-4">
+            <div className="flex items-start justify-between">
+              <label htmlFor="response" className="block text-sm font-medium text-gray-700">
+                Your Response
               </label>
+            </div>
+
+            {/* Response Input */}
+            <div className="relative">
+              <textarea
+                id="response"
+                value={response}
+                onChange={(e) => setResponse(e.target.value)}
+                className="w-full min-h-[120px] p-4 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-base sm:text-lg transition"
+                placeholder="Type your response here..."
+                aria-label="Your interview response"
+              />
               <button
                 type="button"
                 onClick={toggleListening}
-                aria-label={isListening ? 'Stop recording' : 'Start recording'}
-                className="p-2 border rounded-full text-gray-600 hover:bg-gray-100"
+                className={`absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center transition ${
+                  isRecording ? 'text-red-600 border-red-600' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+                title={isRecording ? 'Stop recording' : 'Start recording'}
               >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {isRecording ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </button>
             </div>
-            <textarea
-              value={response}
-              onChange={handleResponseChange}
-              className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-              placeholder="Type your response here..."
-            />
           </div>
 
-          {/* 
-          // Tips Section
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-700">
-              Tips:
-            </h3>
-            <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-              {currentQuestion.tips.map((tip, index) => (
-                <li key={index}>{tip}</li>
-              ))}
-            </ul>
-          </div>
-          */}
-
-          {/* Feedback Section - Conditionally rendered */}
+          {/* AI Feedback Section */}
           {hasAnswerSubmitted && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-700">
+            <section aria-labelledby="ai-feedback" className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200 transition-opacity duration-300">
+              <h2 id="ai-feedback" className="text-sm font-semibold text-gray-700 mb-3">
                 AI Feedback:
-              </h3>
-              <div className="space-y-3">
-                {SAMPLE_FEEDBACK.map((feedback, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+              </h2>
+              <ul className="space-y-4">
+                {SAMPLE_FEEDBACK.map((item, index) => (
+                  <li 
+                    key={index} 
+                    className={`flex items-start gap-3 border-l-4 pl-3 ${
+                      item.type === 'success' 
+                        ? 'border-green-200 text-green-600' 
+                        : item.type === 'warning'
+                        ? 'border-yellow-200 text-yellow-600'
+                        : 'border-blue-200 text-blue-600'
+                    }`}
                   >
-                    {getFeedbackIcon(feedback.type)}
-                    <p className="text-sm text-gray-600">{feedback.text}</p>
-                  </div>
+                    <span className="flex-shrink-0 mt-0.5">
+                      {item.type === 'success' && <CheckCircle className="w-4 h-4" />}
+                      {item.type === 'warning' && <AlertCircle className="w-4 h-4" />}
+                      {item.type === 'info' && <Lightbulb className="w-4 h-4" />}
+                    </span>
+                    <p className="text-sm text-gray-800">{item.text}</p>
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            </section>
           )}
 
           {/* Action Buttons */}
-          <div className="max-w-xl mx-auto flex gap-4 mt-6">
+          <div className="mt-6 flex gap-4">
             {!hasAnswerSubmitted && (
               <button
                 type="button"
-                onClick={handleNextQuestion}
-                className="flex-1 bg-primary text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-dark transition-colors"
+                onClick={handleSubmit}
+                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none transition min-h-[44px]"
               >
                 Submit Answer
               </button>
@@ -464,7 +489,7 @@ export default function InterviewCard() {
               <button
                 type="button"
                 onClick={proceedToNextQuestion}
-                className="flex-1 bg-primary text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-dark transition-colors"
+                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none transition min-h-[44px]"
               >
                 {currentQuestionIndex === interviewQuestions.length - 1 ? 'Finish Interview' : 'Next Question'}
               </button>
@@ -474,7 +499,7 @@ export default function InterviewCard() {
               <button
                 type="button"
                 onClick={handleSaveFeedback}
-                className="flex-1 border border-gray-300 bg-white text-gray-700 px-6 py-2 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                className="flex-1 border border-gray-300 bg-white text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-teal-500 focus:outline-none transition min-h-[44px]"
               >
                 Save Feedback
               </button>
