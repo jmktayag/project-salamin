@@ -40,26 +40,26 @@ export const interviewQuestions: InterviewQuestion[] = [
       'Highlight what you learned from the experience'
     ]
   },
-  {
-    id: '4',
-    question: 'Where do you see yourself in five years?',
-    category: 'Career Goals',
-    difficulty: 'Medium',
-    tips: [
-      'Show ambition but stay realistic',
-      'Align your goals with the company',
-      'Demonstrate commitment to growth'
-    ]
-  },
-  {
-    id: '5',
-    question: 'Why do you want to work for this company?',
-    category: 'Motivation',
-    difficulty: 'Medium',
-    tips: [
-      'Research the company thoroughly',
-      'Connect your values with company values',
-      'Show enthusiasm for the role and company'
-    ]
-  }
+  // {
+  //   id: '4',
+  //   question: 'Where do you see yourself in five years?',
+  //   category: 'Career Goals',
+  //   difficulty: 'Medium',
+  //   tips: [
+  //     'Show ambition but stay realistic',
+  //     'Align your goals with the company',
+  //     'Demonstrate commitment to growth'
+  //   ]
+  // },
+  // {
+  //   id: '5',
+  //   question: 'Why do you want to work for this company?',
+  //   category: 'Motivation',
+  //   difficulty: 'Medium',
+  //   tips: [
+  //     'Research the company thoroughly',
+  //     'Connect your values with company values',
+  //     'Show enthusiasm for the role and company'
+  //   ]
+  // }
 ]; 

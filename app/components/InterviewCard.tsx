@@ -17,6 +17,8 @@ import {
 import { interviewQuestions } from '../data/interviewQuestions';
 import { TextToSpeech } from '../utils/TextToSpeech';
 import { FeedbackGenerator } from '../utils/FeedbackGenerator';
+import { InterviewSummary } from './InterviewSummary';
+import { InterviewAnalyzer } from '../utils/InterviewAnalyzer';
 
 /**
  * Types of feedback that can be displayed to the user
@@ -99,6 +101,10 @@ export default function InterviewCard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [isListening, setIsListening] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [allFeedback, setAllFeedback] = useState<Array<{ question: string; feedback: string }>>([]);
   
   // Refs for managing speech recognition and audio playback
   const recognitionRef = useRef<any>(null);
@@ -106,8 +112,9 @@ export default function InterviewCard() {
   const ttsRef = useRef<TextToSpeech | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const feedbackGeneratorRef = useRef<FeedbackGenerator | null>(null);
+  const interviewAnalyzerRef = useRef<InterviewAnalyzer | null>(null);
 
-  // Initialize Text-to-Speech and Feedback Generator with API key
+  // Initialize Text-to-Speech, Feedback Generator, and Interview Analyzer with API key
   React.useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
@@ -116,6 +123,7 @@ export default function InterviewCard() {
     }
     ttsRef.current = new TextToSpeech(apiKey);
     feedbackGeneratorRef.current = new FeedbackGenerator(apiKey);
+    interviewAnalyzerRef.current = new InterviewAnalyzer(apiKey);
   }, []);
 
   // Get current question from the interview questions array
@@ -150,6 +158,15 @@ export default function InterviewCard() {
           response
         );
         setFeedback(generatedFeedback);
+        
+        // Add feedback to the collection
+        setAllFeedback(prev => [
+          ...prev,
+          {
+            question: currentQuestion.question,
+            feedback: response
+          }
+        ]);
       } else {
         console.error('Feedback generator not initialized');
         setFeedback(SAMPLE_FEEDBACK);
@@ -165,6 +182,25 @@ export default function InterviewCard() {
       ]);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleFinish = async () => {
+    if (!interviewAnalyzerRef.current) {
+      console.error('Interview analyzer not initialized');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const analysis = await interviewAnalyzerRef.current.analyzeInterview(allFeedback);
+      setAnalysis(analysis);
+      setIsInterviewComplete(true);
+    } catch (error) {
+      console.error('Error generating interview analysis:', error);
+      alert('Failed to generate interview analysis. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -356,30 +392,40 @@ export default function InterviewCard() {
   // Interview Complete View
   if (isInterviewComplete) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="max-w-xl w-full bg-white rounded-xl shadow-md p-8 text-center space-y-6">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Interview Complete! 🎉
-          </h2>
-          <p className="text-lg text-gray-600">
-            You&apos;ve completed all the interview questions. Great job!
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900">Interview Complete</h2>
+          <p className="text-gray-600 mt-2">
+            Thank you for completing the interview. Here's your analysis:
           </p>
-          <div className="space-y-4">
-            <button
-              type="button"
-              onClick={handleRestartInterview}
-              className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-colors"
-            >
-              Start New Interview
-            </button>
-            <button
-              type="button"
-              onClick={handleSaveFeedback}
-              className="w-full border border-gray-300 bg-white text-gray-700 font-semibold py-3 px-8 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              Review Feedback
-            </button>
+        </div>
+        
+        {isAnalyzing ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+            <p className="text-gray-600 mt-4">Generating your interview analysis...</p>
           </div>
+        ) : analysis ? (
+          <InterviewSummary {...analysis} />
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-600">No analysis available.</p>
+          </div>
+        )}
+
+        <div className="flex justify-center gap-4 mt-8">
+          <button
+            onClick={handleRestartInterview}
+            className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+          >
+            Start New Interview
+          </button>
+          <button
+            onClick={() => setShowFeedback(true)}
+            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Review All Feedback
+          </button>
         </div>
       </div>
     );
@@ -501,35 +547,40 @@ export default function InterviewCard() {
           )}
 
           {/* Action Buttons */}
-          <div className="mt-6 flex gap-4">
-            {!hasAnswerSubmitted && (
+          <div className="mt-6 flex items-center justify-end gap-4">
+            {!hasAnswerSubmitted ? (
               <button
-                type="button"
                 onClick={handleSubmit}
-                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none transition min-h-[44px]"
+                disabled={isSubmitting}
+                className="inline-flex items-center justify-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors disabled:opacity-50"
               >
-                Submit Answer
+                {isSubmitting ? 'Submitting...' : 'Submit Answer'}
               </button>
-            )}
-
-            {hasAnswerSubmitted && (
-              <button
-                type="button"
-                onClick={proceedToNextQuestion}
-                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none transition min-h-[44px]"
-              >
-                {currentQuestionIndex === interviewQuestions.length - 1 ? 'Finish Interview' : 'Next Question'}
-              </button>
-            )}
-
-            {hasAnswerSubmitted && (
-              <button
-                type="button"
-                onClick={handleSaveFeedback}
-                className="flex-1 border border-gray-300 bg-white text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-teal-500 focus:outline-none transition min-h-[44px]"
-              >
-                Save Feedback
-              </button>
+            ) : (
+              <>
+                {currentQuestionIndex === interviewQuestions.length - 1 ? (
+                  <button
+                    onClick={handleFinish}
+                    disabled={isAnalyzing}
+                    className="inline-flex items-center justify-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors disabled:opacity-50"
+                  >
+                    {isAnalyzing ? 'Analyzing...' : 'Finish Interview'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={proceedToNextQuestion}
+                    className="inline-flex items-center justify-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors"
+                  >
+                    Next Question
+                  </button>
+                )}
+                <button
+                  onClick={handleSaveFeedback}
+                  className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-400 focus:outline-none transition-colors"
+                >
+                  Save Feedback
+                </button>
+              </>
             )}
           </div>
 
