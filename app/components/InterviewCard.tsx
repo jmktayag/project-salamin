@@ -16,11 +16,12 @@ import {
 } from 'lucide-react';
 import { interviewQuestions } from '../data/interviewQuestions';
 import { TextToSpeech } from '../utils/TextToSpeech';
+import { FeedbackGenerator } from '../utils/FeedbackGenerator';
 
 /**
  * Types of feedback that can be displayed to the user
  */
-type FeedbackType = 'success' | 'warning' | 'info';
+type FeedbackType = 'success' | 'warning' | 'suggestion';
 
 /**
  * Structure for feedback items displayed to the user
@@ -67,17 +68,17 @@ interface SpeechRecognition extends EventTarget {
 /**
  * Sample feedback items for demonstration purposes
  */
-const SAMPLE_FEEDBACK: FeedbackItem[] = [
+const SAMPLE_FEEDBACK = [
   {
-    type: 'success',
+    type: 'success' as const,
     text: 'Good structure in your response with a clear problem statement.',
   },
   {
-    type: 'warning',
+    type: 'warning' as const,
     text: 'Consider adding more specific details about the outcomes achieved.',
   },
   {
-    type: 'info',
+    type: 'suggestion' as const,
     text: 'Try using the STAR method (Situation, Task, Action, Result) for more impact.',
   },
 ];
@@ -104,8 +105,9 @@ export default function InterviewCard() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsRef = useRef<TextToSpeech | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const feedbackGeneratorRef = useRef<FeedbackGenerator | null>(null);
 
-  // Initialize Text-to-Speech with API key
+  // Initialize Text-to-Speech and Feedback Generator with API key
   React.useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
@@ -113,6 +115,7 @@ export default function InterviewCard() {
       return;
     }
     ttsRef.current = new TextToSpeech(apiKey);
+    feedbackGeneratorRef.current = new FeedbackGenerator(apiKey);
   }, []);
 
   // Get current question from the interview questions array
@@ -133,12 +136,36 @@ export default function InterviewCard() {
   /**
    * Handles submission of the current answer and shows feedback
    */
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (response.trim() === '') {
       alert('Please provide an answer before proceeding.');
       return;
     }
-    setHasAnswerSubmitted(true);
+
+    setIsSubmitting(true);
+    try {
+      if (feedbackGeneratorRef.current) {
+        const generatedFeedback = await feedbackGeneratorRef.current.generateFeedback(
+          currentQuestion.question,
+          response
+        );
+        setFeedback(generatedFeedback);
+      } else {
+        console.error('Feedback generator not initialized');
+        setFeedback(SAMPLE_FEEDBACK);
+      }
+      setHasAnswerSubmitted(true);
+    } catch (error) {
+      console.error('Error generating feedback:', error);
+      setFeedback([
+        {
+          type: 'warning',
+          text: 'Unable to generate feedback. Please try again.',
+        },
+      ]);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   /**
@@ -216,7 +243,7 @@ export default function InterviewCard() {
         return <CheckCircle2 {...iconProps} className={`${iconProps.className} text-green-500`} />;
       case 'warning':
         return <AlertCircle {...iconProps} className={`${iconProps.className} text-yellow-500`} />;
-      case 'info':
+      case 'suggestion':
         return <HelpCircle {...iconProps} className={`${iconProps.className} text-blue-500`} />;
     }
   };
@@ -450,7 +477,7 @@ export default function InterviewCard() {
                 AI Feedback:
               </h2>
               <ul className="space-y-4">
-                {SAMPLE_FEEDBACK.map((item, index) => (
+                {feedback.map((item, index) => (
                   <li 
                     key={index} 
                     className={`flex items-start gap-3 border-l-4 pl-3 ${
@@ -464,7 +491,7 @@ export default function InterviewCard() {
                     <span className="flex-shrink-0 mt-0.5">
                       {item.type === 'success' && <CheckCircle className="w-4 h-4" />}
                       {item.type === 'warning' && <AlertCircle className="w-4 h-4" />}
-                      {item.type === 'info' && <Lightbulb className="w-4 h-4" />}
+                      {item.type === 'suggestion' && <Lightbulb className="w-4 h-4" />}
                     </span>
                     <p className="text-sm text-gray-800">{item.text}</p>
                   </li>
