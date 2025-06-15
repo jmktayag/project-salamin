@@ -14,15 +14,24 @@ import {
 import { interviewQuestions } from '../data/interviewQuestions';
 import { TextToSpeech } from '../utils/TextToSpeech';
 
-// Types
+/**
+ * Types of feedback that can be displayed to the user
+ */
 type FeedbackType = 'success' | 'warning' | 'info';
 
+/**
+ * Structure for feedback items displayed to the user
+ */
 interface FeedbackItem {
+  /** Type of feedback (success, warning, or info) */
   type: FeedbackType;
+  /** Feedback message text */
   text: string;
 }
 
-// Web Speech API type
+/**
+ * Web Speech API type definitions for TypeScript
+ */
 interface SpeechRecognitionAlternative {
   transcript: string;
   confidence: number;
@@ -52,7 +61,9 @@ interface SpeechRecognition extends EventTarget {
   stop: () => void;
 }
 
-// Constants
+/**
+ * Sample feedback items for demonstration purposes
+ */
 const SAMPLE_FEEDBACK: FeedbackItem[] = [
   {
     type: 'success',
@@ -68,9 +79,12 @@ const SAMPLE_FEEDBACK: FeedbackItem[] = [
   },
 ];
 
-// Component
+/**
+ * InterviewCard component that handles the interview process
+ * including speech recognition, text-to-speech, and feedback
+ */
 export default function InterviewCard() {
-  // State
+  // State management
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -78,11 +92,13 @@ export default function InterviewCard() {
   const [hasAnswerSubmitted, setHasAnswerSubmitted] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  
+  // Refs for managing speech recognition and audio playback
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsRef = useRef<TextToSpeech | null>(null);
 
-  // Initialize TTS
+  // Initialize Text-to-Speech with API key
   React.useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
@@ -92,23 +108,31 @@ export default function InterviewCard() {
     ttsRef.current = new TextToSpeech(apiKey);
   }, []);
 
-  // Current question
+  // Get current question from the interview questions array
   const currentQuestion = interviewQuestions[currentQuestionIndex];
 
-  // Handlers
+  /**
+   * Starts a new interview session
+   */
   const handleStartInterview = () => {
     console.log('Starting interview');
     setIsInterviewStarted(true);
     setIsInterviewComplete(false);
     setCurrentQuestionIndex(0);
     setResponse('');
-    setHasAnswerSubmitted(false); // Reset on new interview
+    setHasAnswerSubmitted(false);
   };
 
+  /**
+   * Updates the response text when user types
+   */
   const handleResponseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setResponse(e.target.value);
   };
 
+  /**
+   * Starts speech recognition to capture user's voice input
+   */
   const startListening = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -131,11 +155,17 @@ export default function InterviewCard() {
     setIsListening(true);
   };
 
+  /**
+   * Stops the active speech recognition session
+   */
   const stopListening = () => {
     recognitionRef.current?.stop();
     setIsListening(false);
   };
 
+  /**
+   * Toggles speech recognition on/off
+   */
   const toggleListening = () => {
     if (isListening) {
       stopListening();
@@ -144,37 +174,41 @@ export default function InterviewCard() {
     }
   };
 
+  /**
+   * Handles submission of the current answer and shows feedback
+   */
   const handleNextQuestion = () => {
     if (response.trim() === '') {
       alert('Please provide an answer before proceeding.');
       return;
     }
     setHasAnswerSubmitted(true);
-    // The AI feedback will now show. User can review before moving to next question.
-    // To move to the next question immediately after submitting, move the following block
-    // outside of this conditional rendering logic.
-    // For now, let's keep it this way to ensure feedback is shown.
-
-    // If you want to automatically go to the next question/complete interview
-    // after feedback is shown, you'd need another button or a timeout.
-    // For this task, we will simply show the feedback after submission.
   };
 
+  /**
+   * Moves to the next question or ends the interview
+   */
   const proceedToNextQuestion = () => {
     if (currentQuestionIndex < interviewQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
       setResponse('');
-      setHasAnswerSubmitted(false); // Reset for next question
+      setHasAnswerSubmitted(false);
     } else {
       setIsInterviewComplete(true);
-      setHasAnswerSubmitted(false); // Reset on interview complete
+      setHasAnswerSubmitted(false);
     }
   };
 
+  /**
+   * Saves feedback for the current question
+   */
   const handleSaveFeedback = () => {
     console.log('Saving feedback for question:', currentQuestion.id);
   };
 
+  /**
+   * Resets the interview state to start over
+   */
   const handleRestartInterview = () => {
     setIsInterviewStarted(false);
     setIsInterviewComplete(false);
@@ -183,6 +217,10 @@ export default function InterviewCard() {
     setHasAnswerSubmitted(false);
   };
 
+  /**
+   * Converts text to speech and plays it
+   * @param text - The text to be spoken
+   */
   const speakText = async (text: string) => {
     if (!ttsRef.current) {
       console.error('TTS not initialized');
@@ -209,7 +247,11 @@ export default function InterviewCard() {
     }
   };
 
-  // Helper functions
+  /**
+   * Returns the appropriate icon for each feedback type
+   * @param type - The type of feedback (success, warning, or info)
+   * @returns React component with the appropriate icon
+   */
   const getFeedbackIcon = (type: FeedbackType) => {
     const iconProps = { className: 'w-5 h-5' };
     

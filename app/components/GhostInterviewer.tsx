@@ -3,22 +3,40 @@
 import React, { useState } from 'react';
 import { Mic, Send } from 'lucide-react';
 
+/**
+ * Represents a message in the chat interface
+ */
 type Message = {
+  /** Unique identifier for the message */
   id: string;
+  /** Content of the message */
   content: string;
+  /** Who sent the message (ghost AI or user) */
   sender: 'ghost' | 'user';
+  /** When the message was sent */
   timestamp: Date;
 };
 
+/**
+ * Available feedback tabs in the interface
+ */
 type FeedbackTab = 'behavioral' | 'emotional' | 'strategic';
 
+/**
+ * GhostInterviewer component that provides an AI-powered interview experience
+ * with real-time chat interaction and feedback
+ */
 export default function GhostInterviewer() {
+  // State management
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [activeTab, setActiveTab] = useState<FeedbackTab>('behavioral');
 
+  /**
+   * Initializes a new interview session with a welcome message
+   */
   const handleStartInterview = () => {
     setIsInterviewStarted(true);
     // Add initial ghost message
@@ -32,6 +50,9 @@ export default function GhostInterviewer() {
     ]);
   };
 
+  /**
+   * Handles sending a new message and simulates ghost response
+   */
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
 
@@ -57,6 +78,7 @@ export default function GhostInterviewer() {
     }, 1000);
   };
 
+  // Render welcome screen if interview hasn't started
   if (!isInterviewStarted) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -78,6 +100,7 @@ export default function GhostInterviewer() {
     );
   }
 
+  // Render completion screen if interview is finished
   if (isInterviewComplete) {
     return (
       <div className="min-h-screen bg-gray-100 p-4">
@@ -120,6 +143,7 @@ export default function GhostInterviewer() {
     );
   }
 
+  // Render main chat interface
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
