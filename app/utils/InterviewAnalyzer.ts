@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { BaseAIService } from './BaseAIService';
 
 export interface InterviewAnalysis {
   strengths: string[];
@@ -9,22 +9,24 @@ export interface InterviewAnalysis {
   summary: string;
 }
 
-export class InterviewAnalyzer {
-  private ai: GoogleGenAI;
-  private config = {
-    temperature: 0.7,
-    topK: 40,
-    topP: 0.95,
-  };
-
-  constructor(apiKey: string) {
-    if (!apiKey) {
-      throw new Error('Gemini API key is required');
-    }
-    this.ai = new GoogleGenAI({ apiKey });
+export class InterviewAnalyzer extends BaseAIService {
+  constructor(apiKey?: string) {
+    super('InterviewAnalyzer', apiKey);
   }
 
   async analyzeInterview(feedback: Array<{ question: string; feedback: string }>): Promise<InterviewAnalysis> {
+    // Input validation
+    if (!feedback || feedback.length === 0) {
+      throw new Error('Interview data is required for analysis');
+    }
+
+    // Validate feedback format
+    feedback.forEach((item, index) => {
+      if (!item.question?.trim() || !item.feedback?.trim()) {
+        throw new Error(`Invalid feedback item at index ${index}: question and feedback are required`);
+      }
+    });
+
     const model = 'gemini-2.0-flash-lite';
     const prompt = `
       Analyze the following interview feedback and provide a comprehensive assessment.
@@ -54,35 +56,129 @@ export class InterviewAnalyzer {
       }
     `;
 
-    const result = await this.ai.models.generateContent({
-      model,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: this.config,
+    return await this.withRetry(async () => {
+      const responseText = await this.generateContent({
+        model,
+        prompt,
+        config: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95
+        }
+      });
+
+      const analysis = this.parseJSONOptimized<InterviewAnalysis>(responseText);
+      this.validateAnalysis(analysis);
+      return analysis;
+    });
+  }
+
+  private validateAnalysis(analysis: InterviewAnalysis): void {
+    const requiredFields = ['strengths', 'weaknesses', 'suggestions', 'score', 'verdict', 'summary'];
+    this.validateResponseStructure(analysis, requiredFields);
+    
+    // Additional specific validations
+    if (!Array.isArray(analysis.strengths) || analysis.strengths.length === 0) {
+      throw new Error('Strengths must be a non-empty array');
+    }
+    if (!Array.isArray(analysis.weaknesses) || analysis.weaknesses.length === 0) {
+      throw new Error('Weaknesses must be a non-empty array');
+    }
+    if (!Array.isArray(analysis.suggestions) || analysis.suggestions.length === 0) {
+      throw new Error('Suggestions must be a non-empty array');
+    }
+    if (typeof analysis.score !== 'number' || analysis.score < 0 || analysis.score > 100) {
+      throw new Error('Score must be a number between 0 and 100');
+    }
+    const validVerdicts = ['Strong Hire', 'Hire', 'Weak Hire', 'No Hire'];
+    if (!validVerdicts.includes(analysis.verdict)) {
+      throw new Error(`Invalid verdict: ${analysis.verdict}`);
+    }
+    if (typeof analysis.summary !== 'string' || analysis.summary.trim().length === 0) {
+      throw new Error('Summary must be a non-empty string');
+    }
+  }
+
+  // Static utility methods for backward compatibility
+  static getScoreThresholds() {
+    return {
+      STRONG_HIRE: 90,
+      HIRE: 75,
+      WEAK_HIRE: 60
+    };
+  }
+
+  static getScoreWeights() {
+    return {
+      relevanceAndClarity: 50,
+      rolefit: 30,
+      enthusiasmAndGrowth: 20
+    };
+  }
+
+  static calculateVerdictFromScore(score: number): 'Strong Hire' | 'Hire' | 'Weak Hire' | 'No Hire' {
+    const thresholds = InterviewAnalyzer.getScoreThresholds();
+    if (score >= thresholds.STRONG_HIRE) return 'Strong Hire';
+    if (score >= thresholds.HIRE) return 'Hire';
+    if (score >= thresholds.WEAK_HIRE) return 'Weak Hire';
+    return 'No Hire';
+  }
+
+  static createComprehensiveInterviewData(
+    questions: Array<{ id: string; question: string; category: string; difficulty: 'Easy' | 'Medium' | 'Hard'; tips: string[] }>,
+    responses: string[],
+    feedbackArrays: Array<{ type: 'success' | 'warning' | 'suggestion'; text: string }[]>
+  ) {
+    if (questions.length !== responses.length || questions.length !== feedbackArrays.length) {
+      throw new Error('Questions, responses, and feedback arrays must have the same length');
+    }
+
+    return questions.map((question, index) => ({
+      id: question.id,
+      question: question.question,
+      category: question.category,
+      difficulty: question.difficulty,
+      tips: question.tips,
+      userResponse: responses[index],
+      aiFeedback: feedbackArrays[index] || []
+    }));
+  }
+
+  // Method for comprehensive data analysis (extended functionality)
+  async analyzeInterviewComprehensive(data: Array<{
+    id: string;
+    question: string;
+    category: string;
+    difficulty: 'Easy' | 'Medium' | 'Hard';
+    tips: string[];
+    userResponse: string;
+    aiFeedback: Array<{ type: 'success' | 'warning' | 'suggestion'; text: string }>;
+  }>): Promise<InterviewAnalysis> {
+    // Validate comprehensive input data
+    if (!data || data.length === 0) {
+      throw new Error('Comprehensive interview data is required for analysis');
+    }
+
+    data.forEach((item, index) => {
+      if (!item.id?.trim() || !item.question?.trim() || !item.userResponse?.trim()) {
+        throw new Error(`Invalid interview data at index ${index}: id, question, and userResponse are required`);
+      }
+      
+      if (!item.category?.trim() || !['Easy', 'Medium', 'Hard'].includes(item.difficulty)) {
+        throw new Error(`Invalid interview data at index ${index}: valid category and difficulty are required`);
+      }
+      
+      if (!Array.isArray(item.aiFeedback)) {
+        throw new Error(`Invalid interview data at index ${index}: aiFeedback must be an array`);
+      }
     });
 
-    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) {
-      throw new Error('No valid response from AI');
-    }
+    // Convert comprehensive data to simple feedback format for analysis
+    const feedback = data.map(item => ({
+      question: item.question,
+      feedback: item.userResponse
+    }));
 
-    const responseText = result.candidates[0].content.parts[0].text;
-    try {
-      // Extract JSON object from the response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
-      }
-      const analysis = JSON.parse(jsonMatch[0]) as InterviewAnalysis;
-      
-      // Validate the analysis
-      if (!analysis.strengths || !analysis.weaknesses || !analysis.suggestions ||
-          typeof analysis.score !== 'number' || !analysis.verdict || !analysis.summary) {
-        throw new Error('Invalid analysis format');
-      }
-
-      return analysis;
-    } catch (error) {
-      console.error('Error parsing interview analysis:', error);
-      throw new Error('Failed to generate interview analysis');
-    }
+    return this.analyzeInterview(feedback);
   }
 } 
