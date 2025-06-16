@@ -78,14 +78,14 @@ export class InterviewAnalyzer extends BaseAIService {
     this.validateResponseStructure(analysis, requiredFields);
     
     // Additional specific validations
-    if (!Array.isArray(analysis.strengths) || analysis.strengths.length === 0) {
-      throw new Error('Strengths must be a non-empty array');
+    if (!Array.isArray(analysis.strengths)) {
+      throw new Error('Strengths must be an array');
     }
-    if (!Array.isArray(analysis.weaknesses) || analysis.weaknesses.length === 0) {
-      throw new Error('Weaknesses must be a non-empty array');
+    if (!Array.isArray(analysis.weaknesses)) {
+      throw new Error('Weaknesses must be an array');
     }
-    if (!Array.isArray(analysis.suggestions) || analysis.suggestions.length === 0) {
-      throw new Error('Suggestions must be a non-empty array');
+    if (!Array.isArray(analysis.suggestions)) {
+      throw new Error('Suggestions must be an array');
     }
     if (typeof analysis.score !== 'number' || analysis.score < 0 || analysis.score > 100) {
       throw new Error('Score must be a number between 0 and 100');
