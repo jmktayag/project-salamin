@@ -63,7 +63,7 @@ export abstract class BaseAIService {
   /**
    * Generate content stream using Gemini API
    */
-  protected async generateContentStream(options: GenerateStreamOptions): Promise<AsyncIterable<any>> {
+  protected async generateContentStream(options: GenerateStreamOptions): Promise<AsyncIterable<unknown>> {
     const { model, prompt, config } = options;
     const finalConfig = { ...this.defaultConfig, ...config };
     
@@ -77,12 +77,23 @@ export abstract class BaseAIService {
   /**
    * Extract text from Gemini API response with validation
    */
-  protected extractTextFromResponse(result: any): string {
-    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) {
+  protected extractTextFromResponse(result: unknown): string {
+    const res = result as Record<string, unknown>;
+    const candidates = res.candidates as Array<Record<string, unknown>>;
+    
+    if (!candidates?.[0]) {
+      throw new Error('No valid response from AI');
+    }
+    
+    const content = candidates[0].content as Record<string, unknown>;
+    const parts = content?.parts as Array<Record<string, unknown>>;
+    const text = parts?.[0]?.text as string;
+    
+    if (!text) {
       throw new Error('No valid response from AI');
     }
 
-    return result.candidates[0].content.parts[0].text;
+    return text;
   }
 
   /**
@@ -120,7 +131,7 @@ export abstract class BaseAIService {
   /**
    * Validate that the API response has the expected structure
    */
-  protected validateResponseStructure(response: any, requiredFields: string[]): void {
+  protected validateResponseStructure(response: Record<string, unknown>, requiredFields: string[]): void {
     for (const field of requiredFields) {
       if (!(field in response) || response[field] === undefined || response[field] === null) {
         throw new Error(`Missing required field in response: ${field}`);

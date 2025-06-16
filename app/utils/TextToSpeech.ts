@@ -74,7 +74,7 @@ export class TextToSpeech extends BaseAIService {
   /**
    * Process the audio stream and return the first valid audio buffer
    */
-  private async processAudioStream(response: AsyncIterable<any>): Promise<Buffer> {
+  private async processAudioStream(response: AsyncIterable<unknown>): Promise<Buffer> {
     for await (const chunk of response) {
       const audioBuffer = this.extractAudioFromChunk(chunk);
       if (audioBuffer) {
@@ -88,21 +88,33 @@ export class TextToSpeech extends BaseAIService {
   /**
    * Extract audio data from a response chunk
    */
-  private extractAudioFromChunk(chunk: any): Buffer | null {
-    if (!chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+  private extractAudioFromChunk(chunk: unknown): Buffer | null {
+    const chunkObj = chunk as Record<string, unknown>;
+    const candidates = chunkObj.candidates as Array<Record<string, unknown>>;
+    
+    if (!candidates?.[0]) {
       return null;
     }
-
-    const inlineData = chunk.candidates[0].content.parts[0].inlineData;
-    let fileExtension = mime.getExtension(inlineData.mimeType || '');
+    
+    const content = candidates[0].content as Record<string, unknown>;
+    const parts = content?.parts as Array<Record<string, unknown>>;
+    const inlineData = parts?.[0]?.inlineData as Record<string, unknown>;
+    
+    if (!inlineData) {
+      return null;
+    }
+    const mimeType = inlineData.mimeType as string;
+    const data = inlineData.data as string;
+    
+    let fileExtension = mime.getExtension(mimeType || '');
     let buffer: Buffer;
 
     try {
       if (!fileExtension) {
         fileExtension = 'wav';
-        buffer = this.convertToWav(inlineData.data || '', inlineData.mimeType || '');
+        buffer = this.convertToWav(data || '', mimeType || '');
       } else {
-        buffer = Buffer.from(inlineData.data || '', 'base64');
+        buffer = Buffer.from(data || '', 'base64');
       }
 
       return buffer;
@@ -143,7 +155,7 @@ export class TextToSpeech extends BaseAIService {
    */
   private parseMimeType(mimeType: string): WavConversionOptions {
     const [fileType, ...params] = mimeType.split(';').map(s => s.trim());
-    const [_, format] = fileType.split('/');
+    const [, format] = fileType.split('/');
 
     const options: Partial<WavConversionOptions> = {
       numChannels: 1,
