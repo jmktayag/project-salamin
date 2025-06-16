@@ -3,7 +3,6 @@ import {
   CheckCircle, 
   AlertCircle, 
   Lightbulb, 
-  Award, 
   Trophy,
   Star,
   Target,
@@ -11,10 +10,12 @@ import {
   FileText
 } from 'lucide-react';
 import type { InterviewAnalysis } from '../utils/InterviewAnalyzer';
+import type { InterviewConfiguration } from '../types/interview';
 
 interface InterviewSummaryProps extends InterviewAnalysis {
   onNewInterview: () => void;
   onReviewFeedback: () => void;
+  interviewConfig?: InterviewConfiguration;
 }
 
 export function InterviewSummary({
@@ -26,6 +27,7 @@ export function InterviewSummary({
   summary,
   onNewInterview,
   onReviewFeedback,
+  interviewConfig,
 }: InterviewSummaryProps) {
   const getVerdictColor = (verdict: string) => {
     switch (verdict) {
@@ -51,7 +53,19 @@ export function InterviewSummary({
             <Trophy className="w-8 h-8 text-teal-600" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Interview Complete</h2>
-          <p className="text-lg text-gray-600">Here&apos;s your comprehensive analysis</p>
+          <p className="text-lg text-gray-600">
+            {interviewConfig 
+              ? `Here's your comprehensive analysis for the ${interviewConfig.position} ${interviewConfig.interviewType} interview`
+              : "Here's your comprehensive analysis"
+            }
+          </p>
+          {interviewConfig && (
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-600">
+              <span className="font-medium">{interviewConfig.position}</span>
+              <span>•</span>
+              <span className="capitalize">{interviewConfig.interviewType} Interview</span>
+            </div>
+          )}
         </div>
 
         {/* Overall Summary */}
