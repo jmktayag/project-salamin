@@ -75,7 +75,7 @@ export class InterviewAnalyzer extends BaseAIService {
 
   private validateAnalysis(analysis: InterviewAnalysis): void {
     const requiredFields = ['strengths', 'weaknesses', 'suggestions', 'score', 'verdict', 'summary'];
-    this.validateResponseStructure(analysis, requiredFields);
+    this.validateResponseStructure(analysis as unknown as Record<string, unknown>, requiredFields);
     
     // Additional specific validations
     if (!Array.isArray(analysis.strengths)) {

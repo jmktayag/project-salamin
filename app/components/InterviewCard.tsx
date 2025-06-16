@@ -16,7 +16,7 @@ import { interviewQuestions } from '../data/interviewQuestions';
 import { TextToSpeech } from '../utils/TextToSpeech';
 import { FeedbackGenerator } from '../utils/FeedbackGenerator';
 import { InterviewSummary } from './InterviewSummary';
-import { InterviewAnalyzer } from '../utils/InterviewAnalyzer';
+import { InterviewAnalyzer, InterviewAnalysis } from '../utils/InterviewAnalyzer';
 import InterviewConfiguration from './InterviewConfiguration';
 import { InterviewConfiguration as IInterviewConfiguration } from '../types/interview';
 
@@ -58,7 +58,7 @@ interface SpeechRecognitionEvent {
   results: SpeechRecognitionResultList;
 }
 
-interface SpeechRecognition extends EventTarget {
+interface SpeechRecognitionInterface extends EventTarget {
   lang: string;
   interimResults: boolean;
   onresult: (event: SpeechRecognitionEvent) => void;
@@ -94,11 +94,6 @@ const FEEDBACK_STYLES = {
   suggestion: 'border-blue-200 text-blue-600'
 } as const;
 
-const FEEDBACK_ICONS = {
-  success: 'w-5 h-5 text-green-500',
-  warning: 'w-5 h-5 text-yellow-500',
-  suggestion: 'w-5 h-5 text-blue-500'
-} as const;
 
 /**
  * InterviewCard component that handles the interview process
@@ -113,20 +108,18 @@ export default function InterviewCard() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [response, setResponse] = useState('');
   const [hasAnswerSubmitted, setHasAnswerSubmitted] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState<'ready' | 'recording' | 'processing'>('ready');
-  const [analysis, setAnalysis] = useState<any>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [analysis, setAnalysis] = useState<InterviewAnalysis | null>(null);
   const [allFeedback, setAllFeedback] = useState<Array<{ question: string; feedback: string }>>([]);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
   
   // Refs for managing speech recognition and audio playback
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInterface | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsRef = useRef<TextToSpeech | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -315,7 +308,7 @@ export default function InterviewCard() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [response, currentQuestion.question]);
+  }, [response, currentQuestion.question, currentQuestion.id]);
 
   const handleFinish = useCallback(async () => {
     if (!interviewAnalyzerRef.current) {
@@ -390,33 +383,18 @@ export default function InterviewCard() {
   }, []);
 
 
-  /**
-   * Returns the appropriate icon for each feedback type (memoized)
-   * @param type - The type of feedback (success, warning, or info)
-   * @returns React component with the appropriate icon
-   */
-  const getFeedbackIcon = useCallback((type: FeedbackType) => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle2 className={FEEDBACK_ICONS.success} />;
-      case 'warning':
-        return <AlertCircle className={FEEDBACK_ICONS.warning} />;
-      case 'suggestion':
-        return <HelpCircle className={FEEDBACK_ICONS.suggestion} />;
-    }
-  }, []);
 
   /**
    * Starts speech recognition to capture user's voice input
    */
   const startListening = useCallback(() => {
     const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as unknown as Record<string, unknown>).SpeechRecognition || (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert('Speech recognition not supported in this browser.');
       return;
     }
-    const recognition = new SpeechRecognition();
+    const recognition = new (SpeechRecognition as new () => SpeechRecognitionInterface)();
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -430,13 +408,11 @@ export default function InterviewCard() {
     };
     recognition.onend = () => {
       setIsListening(false);
-      setIsRecording(false);
       setVoiceStatus('ready');
     };
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
-    setIsRecording(true);
     setVoiceStatus('recording');
   }, []);
 
@@ -446,7 +422,6 @@ export default function InterviewCard() {
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
     setIsListening(false);
-    setIsRecording(false);
     setVoiceStatus('ready');
   }, []);
 
@@ -542,7 +517,7 @@ export default function InterviewCard() {
           <InterviewSummary 
             {...analysis} 
             onNewInterview={handleRestartInterview}
-            onReviewFeedback={() => setShowFeedback(true)}
+            onReviewFeedback={() => {}}
             interviewConfig={interviewConfig || undefined}
           />
         ) : (

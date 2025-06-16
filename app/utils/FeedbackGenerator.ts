@@ -61,7 +61,7 @@ export class FeedbackGenerator extends BaseAIService {
     }
 
     for (const item of feedback) {
-      this.validateResponseStructure(item, REQUIRED_FEEDBACK_FIELDS);
+      this.validateResponseStructure(item as unknown as Record<string, unknown>, REQUIRED_FEEDBACK_FIELDS);
       
       if (!['success', 'warning', 'suggestion'].includes(item.type)) {
         throw new Error(`Invalid feedback type: ${item.type}`);
