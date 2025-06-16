@@ -7,10 +7,8 @@ import {
   HelpCircle,
   ArrowRight,
   Mic,
-  MicOff,
   Volume2,
   VolumeX,
-  Square,
   CheckCircle,
   Lightbulb,
 } from 'lucide-react';
@@ -19,6 +17,8 @@ import { TextToSpeech } from '../utils/TextToSpeech';
 import { FeedbackGenerator } from '../utils/FeedbackGenerator';
 import { InterviewSummary } from './InterviewSummary';
 import { InterviewAnalyzer } from '../utils/InterviewAnalyzer';
+import InterviewConfiguration from './InterviewConfiguration';
+import { InterviewConfiguration as IInterviewConfiguration } from '../types/interview';
 
 /**
  * Types of feedback that can be displayed to the user
@@ -107,6 +107,8 @@ const FEEDBACK_ICONS = {
 export default function InterviewCard() {
   // State management
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
+  const [showConfiguration, setShowConfiguration] = useState(false);
+  const [interviewConfig, setInterviewConfig] = useState<IInterviewConfiguration | null>(null);
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [response, setResponse] = useState('');
@@ -238,10 +240,26 @@ export default function InterviewCard() {
   }, [speakText, currentQuestion.question]);
 
   /**
-   * Starts a new interview session
+   * Shows the configuration screen
    */
-  const handleStartInterview = useCallback(() => {
+  const handleShowConfiguration = useCallback(() => {
+    setShowConfiguration(true);
+  }, []);
+
+  /**
+   * Goes back to landing page from configuration
+   */
+  const handleBackToLanding = useCallback(() => {
+    setShowConfiguration(false);
+  }, []);
+
+  /**
+   * Starts a new interview session with configuration
+   */
+  const handleStartInterview = useCallback((config: IInterviewConfiguration) => {
+    setInterviewConfig(config);
     setIsInterviewStarted(true);
+    setShowConfiguration(false);
     setIsInterviewComplete(false);
     setCurrentQuestionIndex(0);
     setResponse('');
@@ -355,6 +373,8 @@ export default function InterviewCard() {
   const handleRestartInterview = useCallback(() => {
     console.log('Restarting interview - resetting all state');
     setIsInterviewStarted(false);
+    setShowConfiguration(false);
+    setInterviewConfig(null);
     setIsInterviewComplete(false);
     setCurrentQuestionIndex(0);
     setResponse('');
@@ -442,6 +462,16 @@ export default function InterviewCard() {
   }, [isListening, startListening, stopListening]);
 
 
+  // Configuration View
+  if (showConfiguration) {
+    return (
+      <InterviewConfiguration
+        onStartInterview={handleStartInterview}
+        onBack={handleBackToLanding}
+      />
+    );
+  }
+
   // Hero Page View
   if (!isInterviewStarted) {
     return (
@@ -486,7 +516,7 @@ export default function InterviewCard() {
             </div>
 
             <button
-              onClick={handleStartInterview}
+              onClick={handleShowConfiguration}
               className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors shadow-lg hover:shadow-xl"
             >
               Start Your Interview
@@ -513,6 +543,7 @@ export default function InterviewCard() {
             {...analysis} 
             onNewInterview={handleRestartInterview}
             onReviewFeedback={() => setShowFeedback(true)}
+            interviewConfig={interviewConfig || undefined}
           />
         ) : (
           <div className="text-center py-8">
