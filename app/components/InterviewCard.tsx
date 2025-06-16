@@ -565,7 +565,7 @@ export default function InterviewCard() {
                     type="button"
                     onClick={handleSpeakQuestion}
                     disabled={isSpeaking}
-                    className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-500 ${
+                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 ${
                       isSpeaking 
                         ? 'border-teal-500 bg-teal-500 hover:bg-teal-600 animate-pulse shadow-lg shadow-teal-500/50 text-white' 
                         : 'border-gray-300 bg-white hover:bg-gray-100 text-gray-600 disabled:opacity-50'
