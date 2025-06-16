@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { BaseAIService } from './BaseAIService';
 import mime from 'mime';
 
 /**
@@ -13,13 +13,14 @@ interface WavConversionOptions {
   bitsPerSample: number;
 }
 
+const TTS_MODEL = 'gemini-2.5-flash-preview-tts';
+
 /**
  * TextToSpeech class that uses Google's Gemini AI to convert text to speech
  * and handles audio format conversion to WAV when necessary.
  */
-export class TextToSpeech {
-  private ai: GoogleGenAI;
-  private config = {
+export class TextToSpeech extends BaseAIService {
+  private ttsConfig = {
     temperature: 1,
     responseModalities: ['audio'],
     speechConfig: {
@@ -36,11 +37,8 @@ export class TextToSpeech {
    * @param apiKey - Google Gemini API key
    * @throws Error if API key is not provided
    */
-  constructor(apiKey: string) {
-    if (!apiKey) {
-      throw new Error('Gemini API key is required');
-    }
-    this.ai = new GoogleGenAI({ apiKey });
+  constructor(apiKey?: string) {
+    super('TextToSpeech', apiKey);
   }
 
   /**
@@ -50,29 +48,56 @@ export class TextToSpeech {
    * @throws Error if no audio data is received
    */
   async generateSpeech(text: string): Promise<Buffer> {
-    const model = 'gemini-2.5-flash-preview-tts';
-    const contents = [
-      {
+
+    if (!text || text.trim().length === 0) {
+      throw new Error('Text is required');
+    }
+
+    this.validateTextInput(text);
+
+    return await this.withRetry(async () => {
+      const contents = [{
         role: 'user',
         parts: [{ text }],
-      },
-    ];
+      }];
 
-    const response = await this.ai.models.generateContentStream({
-      model,
-      config: this.config,
-      contents,
+      const response = await this.ai.models.generateContentStream({
+        model: TTS_MODEL,
+        config: this.ttsConfig,
+        contents,
+      });
+
+      return await this.processAudioStream(response);
     });
+  }
 
+  /**
+   * Process the audio stream and return the first valid audio buffer
+   */
+  private async processAudioStream(response: AsyncIterable<any>): Promise<Buffer> {
     for await (const chunk of response) {
-      if (!chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-        continue;
+      const audioBuffer = this.extractAudioFromChunk(chunk);
+      if (audioBuffer) {
+        return audioBuffer;
       }
+    }
+    
+    throw new Error('No audio data received');
+  }
 
-      const inlineData = chunk.candidates[0].content.parts[0].inlineData;
-      let fileExtension = mime.getExtension(inlineData.mimeType || '');
-      let buffer: Buffer;
+  /**
+   * Extract audio data from a response chunk
+   */
+  private extractAudioFromChunk(chunk: any): Buffer | null {
+    if (!chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+      return null;
+    }
 
+    const inlineData = chunk.candidates[0].content.parts[0].inlineData;
+    let fileExtension = mime.getExtension(inlineData.mimeType || '');
+    let buffer: Buffer;
+
+    try {
       if (!fileExtension) {
         fileExtension = 'wav';
         buffer = this.convertToWav(inlineData.data || '', inlineData.mimeType || '');
@@ -81,9 +106,19 @@ export class TextToSpeech {
       }
 
       return buffer;
+    } catch (error) {
+      console.error('Failed to process audio data:', error);
+      return null;
     }
+  }
 
-    throw new Error('No audio data received');
+  /**
+   * Validate text input for speech generation
+   */
+  private validateTextInput(text: string): void {
+    if (text.length > 5000) {
+      throw new Error('Text is too long. Maximum length is 5000 characters.');
+    }
   }
 
   /**
@@ -96,6 +131,7 @@ export class TextToSpeech {
     const options = this.parseMimeType(mimeType);
     const wavHeader = this.createWavHeader(rawData.length, options);
     const buffer = Buffer.from(rawData, 'base64');
+
 
     return Buffer.concat([wavHeader, buffer]);
   }
@@ -127,6 +163,7 @@ export class TextToSpeech {
       }
     }
 
+
     return options as WavConversionOptions;
   }
 
@@ -155,6 +192,7 @@ export class TextToSpeech {
     buffer.writeUInt16LE(bitsPerSample, 34);      // BitsPerSample
     buffer.write('data', 36);                     // Subchunk2ID
     buffer.writeUInt32LE(dataLength, 40);         // Subchunk2Size
+
 
     return buffer;
   }

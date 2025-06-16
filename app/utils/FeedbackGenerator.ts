@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { BaseAIService } from './BaseAIService';
 
 export type FeedbackType = 'success' | 'warning' | 'suggestion';
 
@@ -7,24 +7,40 @@ export interface FeedbackItem {
   text: string;
 }
 
-export class FeedbackGenerator {
-  private ai: GoogleGenAI;
-  private config = {
-    temperature: 0.7,
-    topK: 40,
-    topP: 0.95,
-  };
+const FEEDBACK_MODEL = 'gemini-2.0-flash-lite';
+const REQUIRED_FEEDBACK_FIELDS = ['type', 'text'];
 
-  constructor(apiKey: string) {
-    if (!apiKey) {
-      throw new Error('Gemini API key is required');
-    }
-    this.ai = new GoogleGenAI({ apiKey });
+export class FeedbackGenerator extends BaseAIService {
+  constructor(apiKey?: string) {
+    super('FeedbackGenerator', apiKey);
   }
 
   async generateFeedback(question: string, response: string): Promise<FeedbackItem[]> {
-    const model = 'gemini-2.0-flash-lite';
-    const prompt = `Analyze this interview response and provide feedback in the following format:
+    if (!question.trim() || !response.trim()) {
+      throw new Error('Question and response are required');
+    }
+
+    const prompt = this.buildFeedbackPrompt(question, response);
+
+    try {
+      return await this.withRetry(async () => {
+        const responseText = await this.generateContent({
+          model: FEEDBACK_MODEL,
+          prompt
+        });
+
+        const feedback = this.parseJSONOptimized<FeedbackItem[]>(responseText);
+        this.validateFeedbackItems(feedback);
+        return feedback;
+      });
+    } catch (error) {
+      // Return fallback feedback instead of throwing
+      return this.getFallbackFeedback();
+    }
+  }
+
+  private buildFeedbackPrompt(question: string, response: string): string {
+    return `Analyze this interview response and provide feedback in the following format:
     - Success: What was done well
     - Warning: What needs improvement
     - Suggestion: How to improve
@@ -32,35 +48,37 @@ export class FeedbackGenerator {
     Question: ${question}
     Response: ${response}
 
-    Provide 1 specific point for each category. Each point should be concise and no longer than 2 sentences. Format each point as a JSON object with 'type' ('success', 'warning', or 'suggestion') and 'text' (the feedback message).`;
+        Provide 1 specific point for each category. Each point should be concise and no longer than 2 sentences. Format each point as a JSON object with 'type' ('success', 'warning', or 'suggestion') and 'text' (the feedback message).`;
+  }
 
-    const result = await this.ai.models.generateContent({
-      model,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: this.config,
-    });
-
-    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) {
-      throw new Error('No valid response from AI');
+  private validateFeedbackItems(feedback: FeedbackItem[]): void {
+    if (!Array.isArray(feedback)) {
+      throw new Error('Feedback must be an array');
     }
 
-    const responseText = result.candidates[0].content.parts[0].text;
-    try {
-      // Extract JSON array from the response
-      const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
+    if (feedback.length === 0) {
+      throw new Error('Feedback array cannot be empty');
+    }
+
+    for (const item of feedback) {
+      this.validateResponseStructure(item, REQUIRED_FEEDBACK_FIELDS);
+      
+      if (!['success', 'warning', 'suggestion'].includes(item.type)) {
+        throw new Error(`Invalid feedback type: ${item.type}`);
       }
-      const feedback = JSON.parse(jsonMatch[0]) as FeedbackItem[];
-      return feedback;
-    } catch (error) {
-      console.error('Error parsing feedback:', error);
-      return [
-        {
-          type: 'warning',
-          text: 'Unable to generate feedback. Please try again.',
-        },
-      ];
+      
+      if (typeof item.text !== 'string' || item.text.trim().length === 0) {
+        throw new Error('Feedback text must be a non-empty string');
+      }
     }
   }
-} 
+
+  private getFallbackFeedback(): FeedbackItem[] {
+    return [
+      {
+        type: 'warning',
+        text: 'Unable to generate AI feedback at this time. Please try again later.'
+      }
+    ];
+  }
+}

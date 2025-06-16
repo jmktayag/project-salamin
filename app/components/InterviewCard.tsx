@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo, useCallback } from 'react';
 import {
   CheckCircle2,
   AlertCircle,
@@ -86,6 +86,21 @@ const SAMPLE_FEEDBACK = [
 ];
 
 /**
+ * Constants for performance optimization
+ */
+const FEEDBACK_STYLES = {
+  success: 'border-green-200 text-green-600',
+  warning: 'border-yellow-200 text-yellow-600',
+  suggestion: 'border-blue-200 text-blue-600'
+} as const;
+
+const FEEDBACK_ICONS = {
+  success: 'w-5 h-5 text-green-500',
+  warning: 'w-5 h-5 text-yellow-500',
+  suggestion: 'w-5 h-5 text-blue-500'
+} as const;
+
+/**
  * InterviewCard component that handles the interview process
  * including speech recognition, text-to-speech, and feedback
  */
@@ -105,6 +120,7 @@ export default function InterviewCard() {
   const [analysis, setAnalysis] = useState<any>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [allFeedback, setAllFeedback] = useState<Array<{ question: string; feedback: string }>>([]);
+  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
   
   // Refs for managing speech recognition and audio playback
   const recognitionRef = useRef<any>(null);
@@ -121,126 +137,56 @@ export default function InterviewCard() {
       console.error('Gemini API key not found in environment variables');
       return;
     }
-    ttsRef.current = new TextToSpeech(apiKey);
-    feedbackGeneratorRef.current = new FeedbackGenerator(apiKey);
-    interviewAnalyzerRef.current = new InterviewAnalyzer(apiKey);
+    
+    try {
+      ttsRef.current = new TextToSpeech(apiKey);
+      feedbackGeneratorRef.current = new FeedbackGenerator(apiKey);
+      interviewAnalyzerRef.current = new InterviewAnalyzer(apiKey);
+    } catch (error) {
+      console.error('Failed to initialize AI services:', error);
+    }
   }, []);
 
-  // Get current question from the interview questions array
-  const currentQuestion = interviewQuestions[currentQuestionIndex];
-
-  /**
-   * Starts a new interview session
-   */
-  const handleStartInterview = () => {
-    console.log('Starting interview');
-    setIsInterviewStarted(true);
-    setIsInterviewComplete(false);
-    setCurrentQuestionIndex(0);
-    setResponse('');
-    setHasAnswerSubmitted(false);
-  };
-
-  /**
-   * Handles submission of the current answer and shows feedback
-   */
-  const handleSubmit = async () => {
-    if (response.trim() === '') {
-      alert('Please provide an answer before proceeding.');
-      return;
+  // Get current question from the interview questions array (memoized)
+  const currentQuestion = useMemo(() => {
+    // Defensive check to prevent index out of bounds
+    if (currentQuestionIndex >= interviewQuestions.length) {
+      console.warn(`Question index ${currentQuestionIndex} exceeds available questions (${interviewQuestions.length})`);
+      return interviewQuestions[interviewQuestions.length - 1]; // Return last question as fallback
     }
-
-    setIsSubmitting(true);
-    try {
-      if (feedbackGeneratorRef.current) {
-        const generatedFeedback = await feedbackGeneratorRef.current.generateFeedback(
-          currentQuestion.question,
-          response
-        );
-        setFeedback(generatedFeedback);
-        
-        // Add feedback to the collection
-        setAllFeedback(prev => [
-          ...prev,
-          {
-            question: currentQuestion.question,
-            feedback: response
-          }
-        ]);
-      } else {
-        console.error('Feedback generator not initialized');
-        setFeedback(SAMPLE_FEEDBACK);
-      }
-      setHasAnswerSubmitted(true);
-    } catch (error) {
-      console.error('Error generating feedback:', error);
-      setFeedback([
-        {
-          type: 'warning',
-          text: 'Unable to generate feedback. Please try again.',
-        },
-      ]);
-    } finally {
-      setIsSubmitting(false);
+    
+    const question = interviewQuestions[currentQuestionIndex];
+    
+    // Warn if we're about to show a question that was already answered (edge case)
+    if (answeredQuestionIds.has(question.id)) {
+      console.warn(`Question ${question.id} was already answered. This might indicate a state management issue.`);
     }
-  };
+    
+    return question;
+  }, [currentQuestionIndex, answeredQuestionIds]);
 
-  const handleFinish = async () => {
-    if (!interviewAnalyzerRef.current) {
-      console.error('Interview analyzer not initialized');
-      return;
-    }
+  // Calculate progress percentage (memoized)
+  const progressPercentage = useMemo(() => 
+    Math.round(((currentQuestionIndex + 1) / interviewQuestions.length) * 100),
+    [currentQuestionIndex]
+  );
 
-    setIsAnalyzing(true);
-    try {
-      const analysis = await interviewAnalyzerRef.current.analyzeInterview(allFeedback);
-      setAnalysis(analysis);
-      setIsInterviewComplete(true);
-    } catch (error) {
-      console.error('Error generating interview analysis:', error);
-      alert('Failed to generate interview analysis. Please try again.');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
+  // Memoized feedback item style calculator
+  const getFeedbackItemStyle = useCallback((type: FeedbackType) => 
+    `flex items-start gap-3 border-l-4 pl-3 ${FEEDBACK_STYLES[type]}`,
+    []
+  );
 
-  /**
-   * Moves to the next question or ends the interview
-   */
-  const proceedToNextQuestion = () => {
-    if (currentQuestionIndex < interviewQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      setResponse('');
-      setHasAnswerSubmitted(false);
-    } else {
-      setIsInterviewComplete(true);
-      setHasAnswerSubmitted(false);
-    }
-  };
-
-  /**
-   * Saves feedback for the current question
-   */
-  const handleSaveFeedback = () => {
-    console.log('Saving feedback for question:', currentQuestion.id);
-  };
-
-  /**
-   * Resets the interview state to start over
-   */
-  const handleRestartInterview = () => {
-    setIsInterviewStarted(false);
-    setIsInterviewComplete(false);
-    setCurrentQuestionIndex(0);
-    setResponse('');
-    setHasAnswerSubmitted(false);
-  };
+  // Optimized response change handler
+  const handleResponseChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setResponse(e.target.value);
+  }, []);
 
   /**
    * Converts text to speech and plays it
    * @param text - The text to be spoken
    */
-  const speakText = async (text: string) => {
+  const speakText = useCallback(async (text: string) => {
     if (!ttsRef.current) {
       console.error('TTS not initialized');
       return;
@@ -264,30 +210,166 @@ export default function InterviewCard() {
       console.error('Error generating speech:', error);
       setIsSpeaking(false);
     }
-  };
+  }, []);
+
+  // Memoized speak question handler
+  const handleSpeakQuestion = useCallback(() => {
+    speakText(currentQuestion.question);
+  }, [speakText, currentQuestion.question]);
 
   /**
-   * Returns the appropriate icon for each feedback type
+   * Starts a new interview session
+   */
+  const handleStartInterview = useCallback(() => {
+    setIsInterviewStarted(true);
+    setIsInterviewComplete(false);
+    setCurrentQuestionIndex(0);
+    setResponse('');
+    setHasAnswerSubmitted(false);
+  }, []);
+
+  /**
+   * Handles submission of the current answer and shows feedback
+   */
+  const handleSubmit = useCallback(async () => {
+    if (response.trim() === '') {
+      alert('Please provide an answer before proceeding.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (feedbackGeneratorRef.current) {
+        const generatedFeedback = await feedbackGeneratorRef.current.generateFeedback(
+          currentQuestion.question,
+          response
+        );
+        setFeedback(generatedFeedback);
+        
+        // Add feedback to the collection
+        setAllFeedback(prev => [
+          ...prev,
+          {
+            question: currentQuestion.question,
+            feedback: response
+          }
+        ]);
+        
+        // Track answered question to prevent repetition
+        setAnsweredQuestionIds(prev => {
+          const newSet = new Set(prev);
+          newSet.add(currentQuestion.id);
+          return newSet;
+        });
+      } else {
+        console.error('Feedback generator not initialized');
+        setFeedback(SAMPLE_FEEDBACK);
+      }
+      setHasAnswerSubmitted(true);
+    } catch (error) {
+      console.error('Error generating feedback:', error);
+      setFeedback([
+        {
+          type: 'warning',
+          text: 'Unable to generate feedback. Please try again.',
+        },
+      ]);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [response, currentQuestion.question]);
+
+  const handleFinish = useCallback(async () => {
+    if (!interviewAnalyzerRef.current) {
+      console.error('Interview analyzer not initialized');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const analysis = await interviewAnalyzerRef.current.analyzeInterview(allFeedback);
+      setAnalysis(analysis);
+      setIsInterviewComplete(true);
+    } catch (error) {
+      console.error('Error generating interview analysis:', error);
+      alert('Failed to generate interview analysis. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [allFeedback]);
+
+  /**
+   * Moves to the next question or ends the interview
+   * Includes validation to prevent question repetition
+   */
+  const proceedToNextQuestion = useCallback(() => {
+    const nextQuestionIndex = currentQuestionIndex + 1;
+    
+    // Validate we're not exceeding available questions
+    if (nextQuestionIndex < interviewQuestions.length) {
+      setCurrentQuestionIndex(nextQuestionIndex);
+      setResponse('');
+      setHasAnswerSubmitted(false);
+      
+      // Debug log for question progression
+      console.log(`Progressed to question ${nextQuestionIndex + 1} of ${interviewQuestions.length}`);
+    } else {
+      // End interview after last question
+      console.log('Interview completed - all questions answered');
+      setIsInterviewComplete(true);
+      setHasAnswerSubmitted(false);
+    }
+  }, [currentQuestionIndex]);
+
+  /**
+   * Saves feedback for the current question
+   */
+  const handleSaveFeedback = useCallback(() => {
+    console.log('Saving feedback for question:', currentQuestion.id);
+  }, [currentQuestion.id]);
+
+  /**
+   * Resets the interview state to start over
+   * Ensures clean state to prevent question repetition
+   */
+  const handleRestartInterview = useCallback(() => {
+    console.log('Restarting interview - resetting all state');
+    setIsInterviewStarted(false);
+    setIsInterviewComplete(false);
+    setCurrentQuestionIndex(0);
+    setResponse('');
+    setAllFeedback([]);
+    setFeedback([]);
+    setAnalysis(null);
+    setHasAnswerSubmitted(false);
+    setIsAnalyzing(false);
+    setAnsweredQuestionIds(new Set());
+    
+    // Verify state reset
+    console.log(`Interview reset - starting with ${interviewQuestions.length} questions available`);
+  }, []);
+
+
+  /**
+   * Returns the appropriate icon for each feedback type (memoized)
    * @param type - The type of feedback (success, warning, or info)
    * @returns React component with the appropriate icon
    */
-  const getFeedbackIcon = (type: FeedbackType) => {
-    const iconProps = { className: 'w-5 h-5' };
-    
+  const getFeedbackIcon = useCallback((type: FeedbackType) => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 {...iconProps} className={`${iconProps.className} text-green-500`} />;
+        return <CheckCircle2 className={FEEDBACK_ICONS.success} />;
       case 'warning':
-        return <AlertCircle {...iconProps} className={`${iconProps.className} text-yellow-500`} />;
+        return <AlertCircle className={FEEDBACK_ICONS.warning} />;
       case 'suggestion':
-        return <HelpCircle {...iconProps} className={`${iconProps.className} text-blue-500`} />;
+        return <HelpCircle className={FEEDBACK_ICONS.suggestion} />;
     }
-  };
+  }, []);
 
   /**
    * Starts speech recognition to capture user's voice input
    */
-  const startListening = () => {
+  const startListening = useCallback(() => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -298,9 +380,12 @@ export default function InterviewCard() {
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)
-        .join(' ');
+      // Optimized transcript processing
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript + ' ';
+      }
+      transcript = transcript.trim();
       setResponse(prev => (prev ? prev + ' ' : '') + transcript);
     };
     recognition.onend = () => {
@@ -311,27 +396,27 @@ export default function InterviewCard() {
     recognition.start();
     setIsListening(true);
     setIsRecording(true);
-  };
+  }, []);
 
   /**
    * Stops the active speech recognition session
    */
-  const stopListening = () => {
+  const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
     setIsListening(false);
     setIsRecording(false);
-  };
+  }, []);
 
   /**
    * Toggles speech recognition on/off
    */
-  const toggleListening = () => {
+  const toggleListening = useCallback(() => {
     if (isListening) {
       stopListening();
     } else {
       startListening();
     }
-  };
+  }, [isListening, startListening, stopListening]);
 
   // Hero Page View
   if (!isInterviewStarted) {
@@ -422,12 +507,12 @@ export default function InterviewCard() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
             <span>Question {currentQuestionIndex + 1} of {interviewQuestions.length}</span>
-            <span>{Math.round(((currentQuestionIndex + 1) / interviewQuestions.length) * 100)}% Complete</span>
+            <span>{progressPercentage}% Complete</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentQuestionIndex + 1) / interviewQuestions.length) * 100}%` }}
+              style={{ width: `${progressPercentage}%` }}
             />
           </div>
         </div>
@@ -446,7 +531,7 @@ export default function InterviewCard() {
                 {currentQuestion.question}
               </h3>
               <p className="text-sm text-gray-600">
-                Example: "I'm a senior iOS developer with 8+ years of experience building scalable apps."
+                Example: &quot;I&apos;m a senior iOS developer with 8+ years of experience building scalable apps.&quot;
               </p>
               
               {/* Audio Controls */}
@@ -454,7 +539,7 @@ export default function InterviewCard() {
                 {ttsRef.current && (
                   <button
                     type="button"
-                    onClick={() => speakText(currentQuestion.question)}
+                    onClick={handleSpeakQuestion}
                     disabled={isSpeaking}
                     className="w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
                     aria-label="Play question audio"
@@ -480,7 +565,7 @@ export default function InterviewCard() {
               <textarea
                 id="response"
                 value={response}
-                onChange={(e) => setResponse(e.target.value)}
+                onChange={handleResponseChange}
                 className="w-full min-h-[120px] p-4 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-base sm:text-lg transition"
                 placeholder="Type your response here..."
                 aria-label="Your interview response"
@@ -509,13 +594,7 @@ export default function InterviewCard() {
                 {feedback.map((item, index) => (
                   <li 
                     key={index} 
-                    className={`flex items-start gap-3 border-l-4 pl-3 ${
-                      item.type === 'success' 
-                        ? 'border-green-200 text-green-600' 
-                        : item.type === 'warning'
-                        ? 'border-yellow-200 text-yellow-600'
-                        : 'border-blue-200 text-blue-600'
-                    }`}
+                    className={getFeedbackItemStyle(item.type)}
                   >
                     <span className="flex-shrink-0 mt-0.5">
                       {item.type === 'success' && <CheckCircle className="w-4 h-4" />}

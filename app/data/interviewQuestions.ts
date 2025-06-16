@@ -6,7 +6,8 @@ export interface InterviewQuestion {
   tips: string[];
 }
 
-export const interviewQuestions: InterviewQuestion[] = [
+// Interview questions array with validation
+const rawInterviewQuestions: InterviewQuestion[] = [
   {
     id: '1',
     question: 'Tell me about yourself and your background.',
@@ -29,17 +30,17 @@ export const interviewQuestions: InterviewQuestion[] = [
       'Explain how these strengths benefit the company'
     ]
   },
-  {
-    id: '3',
-    question: 'Describe a challenging situation you faced at work and how you handled it.',
-    category: 'Behavioral',
-    difficulty: 'Hard',
-    tips: [
-      'Use the STAR method (Situation, Task, Action, Result)',
-      'Focus on your actions and decisions',
-      'Highlight what you learned from the experience'
-    ]
-  },
+  // {
+  //   id: '3',
+  //   question: 'Describe a challenging situation you faced at work and how you handled it.',
+  //   category: 'Behavioral',
+  //   difficulty: 'Hard',
+  //   tips: [
+  //     'Use the STAR method (Situation, Task, Action, Result)',
+  //     'Focus on your actions and decisions',
+  //     'Highlight what you learned from the experience'
+  //   ]
+  // },
   // {
   //   id: '4',
   //   question: 'Where do you see yourself in five years?',
@@ -62,4 +63,28 @@ export const interviewQuestions: InterviewQuestion[] = [
   //     'Show enthusiasm for the role and company'
   //   ]
   // }
-]; 
+];
+
+// Validate question uniqueness and export
+function validateInterviewQuestions(questions: InterviewQuestion[]): InterviewQuestion[] {
+  const seenIds = new Set<string>();
+  const duplicateIds: string[] = [];
+  
+  questions.forEach(question => {
+    if (seenIds.has(question.id)) {
+      duplicateIds.push(question.id);
+    } else {
+      seenIds.add(question.id);
+    }
+  });
+  
+  if (duplicateIds.length > 0) {
+    console.error('Duplicate question IDs found:', duplicateIds);
+    throw new Error(`Duplicate question IDs detected: ${duplicateIds.join(', ')}`);
+  }
+  
+  console.log(`Validated ${questions.length} unique interview questions`);
+  return questions;
+}
+
+export const interviewQuestions = validateInterviewQuestions(rawInterviewQuestions);
