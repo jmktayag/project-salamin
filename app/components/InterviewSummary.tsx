@@ -51,7 +51,7 @@ export function InterviewSummary({
             <Trophy className="w-8 h-8 text-teal-600" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Interview Complete</h2>
-          <p className="text-lg text-gray-600">Here's your comprehensive analysis</p>
+          <p className="text-lg text-gray-600">Here&apos;s your comprehensive analysis</p>
         </div>
 
         {/* Overall Summary */}

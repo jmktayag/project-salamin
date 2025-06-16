@@ -117,6 +117,7 @@ export default function InterviewCard() {
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState<'ready' | 'recording' | 'processing'>('ready');
   const [analysis, setAnalysis] = useState<any>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [allFeedback, setAllFeedback] = useState<Array<{ question: string; feedback: string }>>([]);
@@ -177,10 +178,29 @@ export default function InterviewCard() {
     []
   );
 
-  // Optimized response change handler
+  // Auto-resize textarea function - ChatGPT style
+  const autoResizeTextarea = useCallback((textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'auto';
+    const minHeight = 56; // Small initial height like ChatGPT (about 2 lines)
+    const maxHeight = 240; // Maximum height before scrolling
+    const newHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), maxHeight);
+    textarea.style.height = `${newHeight}px`;
+  }, []);
+
+  // Optimized response change handler with auto-resize
   const handleResponseChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setResponse(e.target.value);
-  }, []);
+    autoResizeTextarea(e.target);
+  }, [autoResizeTextarea]);
+
+  // Auto-resize on content change
+  React.useEffect(() => {
+    if (textareaRef.current) {
+      autoResizeTextarea(textareaRef.current);
+    }
+  }, [response, autoResizeTextarea]);
+
+
 
   /**
    * Converts text to speech and plays it
@@ -391,11 +411,13 @@ export default function InterviewCard() {
     recognition.onend = () => {
       setIsListening(false);
       setIsRecording(false);
+      setVoiceStatus('ready');
     };
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
     setIsRecording(true);
+    setVoiceStatus('recording');
   }, []);
 
   /**
@@ -405,6 +427,7 @@ export default function InterviewCard() {
     recognitionRef.current?.stop();
     setIsListening(false);
     setIsRecording(false);
+    setVoiceStatus('ready');
   }, []);
 
   /**
@@ -417,6 +440,7 @@ export default function InterviewCard() {
       startListening();
     }
   }, [isListening, startListening, stopListening]);
+
 
   // Hero Page View
   if (!isInterviewStarted) {
@@ -541,7 +565,11 @@ export default function InterviewCard() {
                     type="button"
                     onClick={handleSpeakQuestion}
                     disabled={isSpeaking}
-                    className="w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-500 ${
+                      isSpeaking 
+                        ? 'border-teal-500 bg-teal-500 hover:bg-teal-600 animate-pulse shadow-lg shadow-teal-500/50 text-white' 
+                        : 'border-gray-300 bg-white hover:bg-gray-100 text-gray-600 disabled:opacity-50'
+                    }`}
                     aria-label="Play question audio"
                     title="Play question audio"
                   >
@@ -560,28 +588,41 @@ export default function InterviewCard() {
               </label>
             </div>
 
+
             {/* Response Input */}
             <div className="relative">
               <textarea
+                ref={textareaRef}
                 id="response"
                 value={response}
                 onChange={handleResponseChange}
-                className="w-full min-h-[120px] p-4 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-base sm:text-lg transition"
+                className="w-full min-h-[56px] pt-4 pl-4 pr-4 pb-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-base sm:text-lg transition-all duration-200 resize-none overflow-y-auto"
                 placeholder="Type your response here..."
                 aria-label="Your interview response"
+                rows={1}
+                style={{ height: '56px' }}
               />
+              
+              {/* Microphone Button - Inside textarea */}
               <button
                 type="button"
                 onClick={toggleListening}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white border border-gray-300 shadow-sm flex items-center justify-center transition ${
-                  isRecording ? 'text-red-600 border-red-600' : 'text-gray-600 hover:bg-gray-100'
-                }`}
-                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-                title={isRecording ? 'Stop recording' : 'Start recording'}
+                className={`absolute bottom-3 right-3 w-8 h-8 rounded-full border-2 transition-all duration-500 focus:outline-none ${
+                  voiceStatus === 'recording' 
+                    ? 'border-red-500 bg-red-500 hover:bg-red-600 animate-pulse shadow-lg shadow-red-500/50 focus:ring-2 focus:ring-red-400' 
+                    : 'border-gray-300 bg-white hover:bg-gray-50 hover:border-teal-600 focus:ring-2 focus:ring-teal-500'
+                } flex items-center justify-center`}
+                aria-label={voiceStatus === 'recording' ? 'Stop recording' : 'Start voice input'}
+                aria-pressed={voiceStatus === 'recording'}
               >
-                {isRecording ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {voiceStatus === 'recording' ? (
+                  <Mic className="w-4 h-4 text-white" />
+                ) : (
+                  <Mic className="w-4 h-4 text-gray-600" />
+                )}
               </button>
             </div>
+
           </div>
 
           {/* AI Feedback Section */}
