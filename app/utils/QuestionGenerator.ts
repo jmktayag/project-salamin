@@ -20,7 +20,7 @@ export class QuestionGenerator extends BaseAIService {
   async generateQuestions(
     position: string,
     interviewType: InterviewType,
-    questionCount: number = 3
+    questionCount: number = 8
   ): Promise<InterviewQuestion[]> {
     try {
       const prompt = this.buildPrompt(position, interviewType, questionCount);
@@ -37,6 +37,19 @@ export class QuestionGenerator extends BaseAIService {
     } catch (error) {
       console.error('QuestionGenerator: Failed to generate questions:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Get difficulty distribution description based on question count
+   */
+  private getDifficultyDistribution(questionCount: number): string {
+    if (questionCount === 3) {
+      return '1 Easy, 1 Medium, 1 Hard';
+    } else if (questionCount === 8) {
+      return '30% Easy (2-3 questions), 50% Medium (4 questions), 20% Hard (1-2 questions)';
+    } else {
+      return `approximately ${Math.round(questionCount * 0.3)} Easy, ${Math.round(questionCount * 0.5)} Medium, ${Math.round(questionCount * 0.2)} Hard`;
     }
   }
 
@@ -90,7 +103,7 @@ ${interviewTypeInstructions}
 
 Requirements:
 - Questions should be specific to the ${position} role
-- Vary difficulty levels: 1 Easy, 1 Medium, 1 Hard (for 3 questions)
+- Vary difficulty levels: ${this.getDifficultyDistribution(questionCount)}
 - Each question should be clear, professional, and interview-appropriate
 - Provide 2-3 helpful tips for each question to guide the candidate
 - Questions should allow for detailed, meaningful responses

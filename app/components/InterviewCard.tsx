@@ -260,10 +260,13 @@ export default function InterviewCard() {
     setQuestionGenerationError(null);
 
     try {
+      const questionCount = process.env.NODE_ENV === 'development' ? 3 : 8;
+      console.log(`Environment: ${process.env.NODE_ENV}, generating ${questionCount} questions`);
+      
       const generatedQuestions = await questionGeneratorRef.current.generateQuestions(
         config.position,
         config.interviewType,
-        3 // Generate 3 questions for local testing
+        questionCount
       );
       
       setInterviewQuestions(generatedQuestions);
