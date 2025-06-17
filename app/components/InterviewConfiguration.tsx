@@ -3,6 +3,8 @@
 import React, { useState, useCallback } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
 import { InterviewConfiguration as IInterviewConfiguration, InterviewType, INTERVIEW_TYPE_OPTIONS } from '../types/interview';
+import AutocompleteInput from './AutocompleteInput';
+import { JOB_POSITIONS } from '../data/jobPositions';
 
 interface InterviewConfigurationProps {
   onStartInterview: (config: IInterviewConfiguration) => void;
@@ -45,12 +47,16 @@ export default function InterviewConfiguration({
     }
   }, [position, interviewType, validateForm, onStartInterview]);
 
-  const handlePositionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPosition(e.target.value);
+  const handlePositionChange = useCallback((value: string) => {
+    setPosition(value);
     if (errors.position) {
       setErrors(prev => ({ ...prev, position: undefined }));
     }
   }, [errors.position]);
+
+  const handlePositionBlur = useCallback(() => {
+    // Trigger validation on blur if needed
+  }, []);
 
   const handleInterviewTypeChange = useCallback((value: InterviewType) => {
     setInterviewType(value);
@@ -98,18 +104,22 @@ export default function InterviewConfiguration({
                 <p className="text-sm text-gray-600 mb-4">
                   This helps us tailor the interview questions to your specific role.
                 </p>
-                <input
-                  type="text"
+                <AutocompleteInput
                   id="position"
                   value={position}
                   onChange={handlePositionChange}
+                  onBlur={handlePositionBlur}
                   placeholder="Enter the position you're applying for"
+                  suggestions={JOB_POSITIONS}
+                  maxSuggestions={8}
+                  debounceMs={300}
                   className={`w-full px-4 py-3 rounded-lg border-2 text-lg transition-colors focus:outline-none ${
                     errors.position
                       ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200'
                       : 'border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200'
                   }`}
                   aria-describedby={errors.position ? 'position-error' : undefined}
+                  aria-label="Job position"
                 />
                 {errors.position && (
                   <p id="position-error" className="mt-2 text-sm text-red-600 flex items-center gap-1">
