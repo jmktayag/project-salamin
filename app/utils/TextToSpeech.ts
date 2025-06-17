@@ -1,5 +1,6 @@
 import { BaseAIService } from './BaseAIService';
 import mime from 'mime';
+import { AudioCacheManager, AudioCacheConfig } from './AudioCacheManager';
 
 /**
  * Configuration options for WAV audio conversion
@@ -13,11 +14,12 @@ interface WavConversionOptions {
   bitsPerSample: number;
 }
 
-const TTS_MODEL = 'gemini-2.5-pro-preview-tts';
+const TTS_MODEL = 'gemini-2.5-flash-preview-tts';
 
 /**
  * TextToSpeech class that uses Google's Gemini AI to convert text to speech
  * and handles audio format conversion to WAV when necessary.
+ * Includes audio caching for improved performance and reduced API costs.
  */
 export class TextToSpeech extends BaseAIService {
   private ttsConfig = {
@@ -32,30 +34,60 @@ export class TextToSpeech extends BaseAIService {
     },
   };
 
+  private cacheManager: AudioCacheManager;
+
   /**
    * Creates a new TextToSpeech instance
    * @param apiKey - Google Gemini API key
+   * @param cacheConfig - Optional cache configuration
    * @throws Error if API key is not provided
    */
-  constructor(apiKey?: string) {
+  constructor(apiKey?: string, cacheConfig?: Partial<AudioCacheConfig>) {
     super('TextToSpeech', apiKey);
+    this.cacheManager = new AudioCacheManager(cacheConfig);
+    
+    // Clear existing cache on initialization to fix hash key issue
+    if (process.env.NODE_ENV === 'development') {
+      this.cacheManager.clearAllCache().then(() => {
+        console.log('TTS: Cache cleared due to hash function update');
+      });
+    }
   }
 
   /**
-   * Generates speech from the given text using Gemini AI
+   * Generates speech from the given text using Gemini AI with caching
    * @param text - The text to convert to speech
    * @returns Promise<Buffer> - Audio data as a Buffer
    * @throws Error if no audio data is received
    */
   async generateSpeech(text: string): Promise<Buffer> {
-
     if (!text || text.trim().length === 0) {
       throw new Error('Text is required');
     }
 
     this.validateTextInput(text);
 
-    return await this.withRetry(async () => {
+    // Generate cache key based on text and voice configuration
+    const cacheKey = this.cacheManager.generateCacheKey(text, this.ttsConfig);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('TTS: Generated cache key for text:', text.substring(0, 50), 'Key:', cacheKey);
+    }
+
+    // Try to get cached audio first
+    const cachedAudio = await this.cacheManager.getCachedAudio(cacheKey);
+    if (cachedAudio) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('TTS: Using cached audio, size:', cachedAudio.length);
+      }
+      return cachedAudio;
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('TTS: No cached audio found, generating new audio');
+    }
+
+    // Generate new audio if not cached
+    const audioBuffer = await this.withRetry(async () => {
       const contents = [{
         role: 'user',
         parts: [{ text }],
@@ -69,20 +101,63 @@ export class TextToSpeech extends BaseAIService {
 
       return await this.processAudioStream(response);
     });
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('TTS: Generated new audio, size:', audioBuffer.length);
+    }
+
+    // Cache the generated audio
+    try {
+      await this.cacheManager.cacheAudio(cacheKey, audioBuffer);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('TTS: Successfully cached audio');
+      }
+    } catch (error) {
+      // Log error but don't fail the request if caching fails
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Failed to cache audio:', error);
+      }
+    }
+
+    return audioBuffer;
   }
 
   /**
-   * Process the audio stream and return the first valid audio buffer
+   * Process the audio stream and collect all audio chunks
+   * Based on Google's reference implementation that handles multiple chunks
    */
   private async processAudioStream(response: AsyncIterable<unknown>): Promise<Buffer> {
+    const audioChunks: Buffer[] = [];
+    
     for await (const chunk of response) {
       const audioBuffer = this.extractAudioFromChunk(chunk);
       if (audioBuffer) {
-        return audioBuffer;
+        audioChunks.push(audioBuffer);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`TTS: Received audio chunk ${audioChunks.length}, size: ${audioBuffer.length}`);
+        }
       }
     }
     
-    throw new Error('No audio data received');
+    if (audioChunks.length === 0) {
+      throw new Error('No audio data received');
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`TTS: Total audio chunks received: ${audioChunks.length}`);
+    }
+    
+    // If multiple chunks, concatenate them; otherwise return the single chunk
+    if (audioChunks.length === 1) {
+      return audioChunks[0];
+    } else {
+      // Concatenate multiple audio chunks
+      const concatenated = Buffer.concat(audioChunks);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`TTS: Concatenated ${audioChunks.length} chunks into ${concatenated.length} bytes`);
+      }
+      return concatenated;
+    }
   }
 
   /**
@@ -207,5 +282,40 @@ export class TextToSpeech extends BaseAIService {
 
 
     return buffer;
+  }
+
+  /**
+   * Start a new interview session and clear the audio cache
+   */
+  async startNewSession(): Promise<void> {
+    await this.cacheManager.startNewSession();
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  getCacheStats() {
+    return this.cacheManager.getStats();
+  }
+
+  /**
+   * Get cache hit rate as percentage
+   */
+  getCacheHitRate(): number {
+    return this.cacheManager.getHitRate();
+  }
+
+  /**
+   * Get formatted cache size
+   */
+  getFormattedCacheSize(): string {
+    return this.cacheManager.getFormattedCacheSize();
+  }
+
+  /**
+   * Clear all cached audio files
+   */
+  async clearCache(): Promise<void> {
+    await this.cacheManager.clearAllCache();
   }
 } 

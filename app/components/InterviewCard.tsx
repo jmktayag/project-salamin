@@ -314,6 +314,15 @@ export default function InterviewCard() {
     setAnsweredQuestionIds(new Set());
     setAnalysis(null);
     
+    // Clear TTS audio cache for new interview session
+    if (ttsRef.current) {
+      try {
+        await ttsRef.current.startNewSession();
+      } catch (error) {
+        console.warn('Failed to clear TTS cache:', error);
+      }
+    }
+    
     try {
       // Generate questions first
       await generateInterviewQuestions(config);
