@@ -10,9 +10,9 @@ export interface FeedbackItem {
 const FEEDBACK_MODEL = 'gemini-2.0-flash-lite';
 const REQUIRED_FEEDBACK_FIELDS = ['type', 'text'];
 
-export class FeedbackGenerator extends BaseAIService {
+export class InterviewFeedbackService extends BaseAIService {
   constructor(apiKey?: string) {
-    super('FeedbackGenerator', apiKey);
+    super('InterviewFeedbackService', apiKey);
   }
 
   async generateFeedback(question: string, response: string): Promise<FeedbackItem[]> {

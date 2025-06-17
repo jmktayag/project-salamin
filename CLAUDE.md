@@ -63,17 +63,24 @@ npm test -- --testNamePattern="specific test name"
 ### Application Structure
 This is a Next.js 14 App Router application with TypeScript. The main application logic is in `/app` with the following key components:
 
-- **InterviewCard** (`app/components/InterviewCard.tsx`) - Main interview orchestrator that manages the complete interview flow, state, and user interactions
+- **InterviewOrchestrator** (`app/components/InterviewOrchestrator.tsx`) - Main interview orchestrator that manages the complete interview flow, state, and user interactions
 - **InterviewSummary** (`app/components/InterviewSummary.tsx`) - Displays comprehensive post-interview analysis with scores and recommendations
-- **GhostInterviewer** (`app/components/GhostInterviewer.tsx`) - Alternative chat interface (currently unused)
+- **InterviewConfiguration** (`app/components/InterviewConfiguration.tsx`) - Pre-interview setup form for job position and interview type selection
+- **ChatInterface** (`app/components/ChatInterface.tsx`) - Alternative chat interface (currently unused)
 
 ### AI Integration Architecture
 The application uses Google Gemini AI through four service classes in `app/utils/`:
 
+<<<<<<< refactor/improve-naming-consistency
+- **InterviewFeedbackService** - Provides per-question analysis using `gemini-2.0-flash-lite`
+- **InterviewAnalysisService** - Generates comprehensive interview assessment
+- **TextToSpeechService** - Converts text to speech using `gemini-2.5-flash-preview-tts` with WAV format conversion
+=======
 - **FeedbackGenerator** - Provides per-question analysis using `gemini-2.0-flash-lite`
 - **InterviewAnalyzer** - Generates comprehensive interview assessment
 - **TextToSpeech** - Converts text to speech using `gemini-2.5-flash-preview-tts` with WAV format conversion
 - **AudioCacheManager** - Browser-based IndexedDB caching for TTS audio files to improve performance and reduce API calls
+>>>>>>> master
 
 ### Interview Flow State Machine
 ```

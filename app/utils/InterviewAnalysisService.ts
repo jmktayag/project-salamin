@@ -9,9 +9,9 @@ export interface InterviewAnalysis {
   summary: string;
 }
 
-export class InterviewAnalyzer extends BaseAIService {
+export class InterviewAnalysisService extends BaseAIService {
   constructor(apiKey?: string) {
-    super('InterviewAnalyzer', apiKey);
+    super('InterviewAnalysisService', apiKey);
   }
 
   async analyzeInterview(feedback: Array<{ question: string; feedback: string }>): Promise<InterviewAnalysis> {
@@ -117,7 +117,7 @@ export class InterviewAnalyzer extends BaseAIService {
   }
 
   static calculateVerdictFromScore(score: number): 'Strong Hire' | 'Hire' | 'Weak Hire' | 'No Hire' {
-    const thresholds = InterviewAnalyzer.getScoreThresholds();
+    const thresholds = InterviewAnalysisService.getScoreThresholds();
     if (score >= thresholds.STRONG_HIRE) return 'Strong Hire';
     if (score >= thresholds.HIRE) return 'Hire';
     if (score >= thresholds.WEAK_HIRE) return 'Weak Hire';

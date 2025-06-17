@@ -1,4 +1,4 @@
-import { FeedbackGenerator, FeedbackItem } from '@/app/utils/FeedbackGenerator';
+import { InterviewFeedbackService, FeedbackItem } from '@/app/utils/InterviewFeedbackService';
 import { GoogleGenAI } from '@google/genai';
 
 // Mock the Google GenAI module
@@ -12,8 +12,8 @@ jest.mock('@google/genai', () => ({
 
 const mockGoogleGenAI = GoogleGenAI as jest.MockedClass<typeof GoogleGenAI>;
 
-describe('FeedbackGenerator', () => {
-  let feedbackGenerator: FeedbackGenerator;
+describe('InterviewFeedbackService', () => {
+  let feedbackGenerator: InterviewFeedbackService;
   let mockGenerateContent: jest.Mock;
 
   beforeEach(() => {
@@ -24,7 +24,7 @@ describe('FeedbackGenerator', () => {
       }
     }) as any);
     
-    feedbackGenerator = new FeedbackGenerator('test-api-key');
+    feedbackGenerator = new InterviewFeedbackService('test-api-key');
   });
 
   afterEach(() => {

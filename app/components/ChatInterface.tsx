@@ -23,10 +23,10 @@ type Message = {
 type FeedbackTab = 'behavioral' | 'emotional' | 'strategic';
 
 /**
- * GhostInterviewer component that provides an AI-powered interview experience
+ * ChatInterface component that provides an AI-powered interview experience
  * with real-time chat interaction and feedback
  */
-export default function GhostInterviewer() {
+export default function ChatInterface() {
   // State management
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);

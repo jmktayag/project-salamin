@@ -1,9 +1,9 @@
-import InterviewCard from './components/InterviewCard'
+import InterviewOrchestrator from './components/InterviewOrchestrator'
 
 export default function Home() {
   return (
     <main>
-      <InterviewCard />
+      <InterviewOrchestrator />
     </main>
   )
 } 

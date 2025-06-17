@@ -13,11 +13,11 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import { InterviewQuestion, getFallbackQuestions } from '../data/interviewQuestions';
-import { TextToSpeech } from '../utils/TextToSpeech';
-import { FeedbackGenerator } from '../utils/FeedbackGenerator';
+import { TextToSpeechService } from '../utils/TextToSpeechService';
+import { InterviewFeedbackService } from '../utils/InterviewFeedbackService';
 import { QuestionGenerator } from '../utils/QuestionGenerator';
 import { InterviewSummary } from './InterviewSummary';
-import { InterviewAnalyzer, InterviewAnalysis } from '../utils/InterviewAnalyzer';
+import { InterviewAnalysisService, InterviewAnalysis } from '../utils/InterviewAnalysisService';
 import InterviewConfiguration from './InterviewConfiguration';
 import { InterviewConfiguration as IInterviewConfiguration } from '../types/interview';
 
@@ -97,10 +97,10 @@ const FEEDBACK_STYLES = {
 
 
 /**
- * InterviewCard component that handles the interview process
+ * InterviewOrchestrator component that handles the interview process
  * including speech recognition, text-to-speech, and feedback
  */
-export default function InterviewCard() {
+export default function InterviewOrchestrator() {
   // State management
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [showConfiguration, setShowConfiguration] = useState(false);
@@ -127,10 +127,10 @@ export default function InterviewCard() {
   // Refs for managing speech recognition and audio playback
   const recognitionRef = useRef<SpeechRecognitionInterface | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const ttsRef = useRef<TextToSpeech | null>(null);
+  const ttsRef = useRef<TextToSpeechService | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const feedbackGeneratorRef = useRef<FeedbackGenerator | null>(null);
-  const interviewAnalyzerRef = useRef<InterviewAnalyzer | null>(null);
+  const feedbackGeneratorRef = useRef<InterviewFeedbackService | null>(null);
+  const interviewAnalyzerRef = useRef<InterviewAnalysisService | null>(null);
   const questionGeneratorRef = useRef<QuestionGenerator | null>(null);
 
   // Initialize AI services with API key
@@ -142,9 +142,9 @@ export default function InterviewCard() {
     }
     
     try {
-      ttsRef.current = new TextToSpeech(apiKey);
-      feedbackGeneratorRef.current = new FeedbackGenerator(apiKey);
-      interviewAnalyzerRef.current = new InterviewAnalyzer(apiKey);
+      ttsRef.current = new TextToSpeechService(apiKey);
+      feedbackGeneratorRef.current = new InterviewFeedbackService(apiKey);
+      interviewAnalyzerRef.current = new InterviewAnalysisService(apiKey);
       questionGeneratorRef.current = new QuestionGenerator();
     } catch (error) {
       console.error('Failed to initialize AI services:', error);
