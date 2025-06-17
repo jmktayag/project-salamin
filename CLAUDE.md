@@ -59,6 +59,14 @@ Uses React hooks for local state with multiple state slices:
 
 Uses Jest with React Testing Library for component integration testing. Tests focus on user interactions and UI state changes rather than isolated unit tests.
 
+## Git Workflow Rules
+
+**Branch Protection:**
+- NEVER commit or push directly to the `master` branch
+- ALL changes must go through Pull Requests (PRs)
+- Create feature branches for all development work
+- Use descriptive branch names (e.g., `feature/add-audio-caching`, `fix/tts-error-handling`)
+
 ## Key Implementation Notes
 
 - AI responses are parsed using regex JSON extraction with fallback error handling
