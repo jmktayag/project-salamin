@@ -450,52 +450,51 @@ export default function InterviewCard() {
   // Hero Page View
   if (!isInterviewStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/20 to-secondary/20">
+      <div className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Ghost Interviewer
-              <span className="text-primary"> 👻</span>
+              <span className="text-5xl sm:text-6xl md:text-7xl">👻</span> Ghost Interviewer
             </h1>
-            <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto mb-12">
+            <p className="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto mb-16 font-medium">
               Practice interviews. Reflect deeply. Get better.
             </p>
             
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-8 mb-12">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-12">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
                 Why Ghost Interviewer?
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-primary" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
+                  <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-teal-600" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Practice Anywhere</h3>
-                  <p className="text-gray-600">Get interview-ready at your own pace, anytime.</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Practice Anywhere</h3>
+                  <p className="text-gray-700">Get interview-ready at your own pace, anytime.</p>
                 </div>
-                <div className="text-center">
-                  <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <AlertCircle className="w-8 h-8 text-primary" />
+                <div className="bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
+                  <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-8 h-8 text-teal-600" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Instant Feedback</h3>
-                  <p className="text-gray-600">Receive AI-powered feedback on your responses.</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Instant Feedback</h3>
+                  <p className="text-gray-700">Receive AI-powered feedback on your responses.</p>
                 </div>
-                <div className="text-center">
-                  <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <HelpCircle className="w-8 h-8 text-primary" />
+                <div className="bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
+                  <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <HelpCircle className="w-8 h-8 text-teal-600" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Learn & Improve</h3>
-                  <p className="text-gray-600">Track your progress and enhance your skills.</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Learn & Improve</h3>
+                  <p className="text-gray-700">Track your progress and enhance your skills.</p>
                 </div>
               </div>
             </div>
 
             <button
               onClick={handleShowConfiguration}
-              className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center px-10 py-5 text-xl font-bold text-white bg-gradient-to-r from-teal-600 to-teal-700 rounded-xl hover:from-teal-700 hover:to-teal-800 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 border-2 border-teal-600"
             >
-              Start Your Interview
-              <ArrowRight className="ml-2 w-5 h-5" />
+              Get Started
+              <ArrowRight className="ml-3 w-6 h-6" />
             </button>
           </div>
         </div>
