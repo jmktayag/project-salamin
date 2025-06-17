@@ -164,6 +164,20 @@ body {
   color: var(--text-secondary);
 }
 
+/* Form Elements */
+.gi-textarea {
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.gi-textarea:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+  ring: 2px solid var(--primary-teal);
+}
+
 /* Responsive Typography */
 @media (min-width: 640px) {
   .gi-heading-1 {

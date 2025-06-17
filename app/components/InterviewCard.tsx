@@ -601,7 +601,7 @@ export default function InterviewCard() {
                 id="response"
                 value={response}
                 onChange={handleResponseChange}
-                className="w-full min-h-[56px] pt-4 pl-4 pr-4 pb-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-base sm:text-lg transition-all duration-200 resize-none overflow-y-auto"
+                className="gi-textarea w-full min-h-[56px] pt-4 pl-4 pr-4 pb-12 text-base sm:text-lg resize-none overflow-y-auto"
                 placeholder="Type your response here..."
                 aria-label="Your interview response"
                 rows={1}
