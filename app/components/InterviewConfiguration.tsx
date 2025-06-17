@@ -73,7 +73,7 @@ export default function InterviewConfiguration({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-secondary/20">
+    <div className="min-h-screen gi-gradient-bg">
       <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">

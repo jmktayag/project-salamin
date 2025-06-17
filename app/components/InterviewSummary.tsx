@@ -45,15 +45,15 @@ export function InterviewSummary({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] p-6">
-      <div className="w-full max-w-xl bg-white rounded-xl shadow-md p-6">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] gi-gradient-bg p-6">
+      <div className="w-full max-w-xl gi-card-lg p-6">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-50 rounded-full mb-4">
             <Trophy className="w-8 h-8 text-teal-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Interview Complete</h2>
-          <p className="text-lg text-gray-600">
+          <h2 className="gi-heading-2 mb-2">Interview Complete</h2>
+          <p className="gi-body-large">
             {interviewConfig 
               ? `Here's your comprehensive analysis for the ${interviewConfig.position} ${interviewConfig.interviewType} interview`
               : "Here's your comprehensive analysis"
@@ -72,9 +72,9 @@ export function InterviewSummary({
         <div className="mb-8 p-4 bg-gray-50 rounded-lg">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-800">Overall Assessment</h3>
+            <h3 className="gi-heading-3">Overall Assessment</h3>
           </div>
-          <p className="text-gray-600 leading-relaxed text-base">{summary}</p>
+          <p className="gi-body leading-relaxed">{summary}</p>
         </div>
 
         {/* Score and Verdict */}
@@ -85,8 +85,8 @@ export function InterviewSummary({
               <div className="inline-flex items-center justify-center w-12 h-12 bg-teal-50 rounded-full mb-2">
                 <Target className="w-6 h-6 text-teal-600" />
               </div>
-              <h3 className="text-sm font-medium text-gray-600 mb-1">Final Score</h3>
-              <p className="text-3xl font-bold text-gray-900">{score}/100</p>
+              <h3 className="text-sm font-medium gi-text-muted mb-1">Final Score</h3>
+              <p className="text-3xl font-bold gi-text-primary">{score}/100</p>
             </div>
 
             {/* Verdict Card */}
@@ -106,14 +106,14 @@ export function InterviewSummary({
             <div className="p-2 bg-green-50 rounded-lg">
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-800">Key Strengths</h3>
+            <h3 className="gi-heading-3">Key Strengths</h3>
           </div>
           {strengths.length > 0 ? (
             <ul className="space-y-2">
               {strengths.map((strength, index) => (
                 <li key={index} className="flex items-start gap-2 p-2 bg-green-50/50 rounded-lg">
                   <span className="text-green-600 mt-1">•</span>
-                  <span className="text-gray-600 leading-relaxed text-base">{strength}</span>
+                  <span className="gi-body leading-relaxed">{strength}</span>
                 </li>
               ))}
             </ul>
@@ -130,14 +130,14 @@ export function InterviewSummary({
             <div className="p-2 bg-yellow-50 rounded-lg">
               <AlertCircle className="w-5 h-5 text-yellow-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-800">Areas for Improvement</h3>
+            <h3 className="gi-heading-3">Areas for Improvement</h3>
           </div>
           {weaknesses.length > 0 ? (
             <ul className="space-y-2">
               {weaknesses.map((weakness, index) => (
                 <li key={index} className="flex items-start gap-2 p-2 bg-yellow-50/50 rounded-lg">
                   <span className="text-yellow-600 mt-1">•</span>
-                  <span className="text-gray-600 leading-relaxed text-base">{weakness}</span>
+                  <span className="gi-body leading-relaxed">{weakness}</span>
                 </li>
               ))}
             </ul>
@@ -154,14 +154,14 @@ export function InterviewSummary({
             <div className="p-2 bg-blue-50 rounded-lg">
               <Lightbulb className="w-5 h-5 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-800">Suggestions for Improvement</h3>
+            <h3 className="gi-heading-3">Suggestions for Improvement</h3>
           </div>
           {suggestions.length > 0 ? (
             <ul className="space-y-2">
               {suggestions.map((suggestion, index) => (
                 <li key={index} className="flex items-start gap-2 p-2 bg-blue-50/50 rounded-lg">
                   <span className="text-blue-600 mt-1">•</span>
-                  <span className="text-gray-600 leading-relaxed text-base">{suggestion}</span>
+                  <span className="gi-body leading-relaxed">{suggestion}</span>
                 </li>
               ))}
             </ul>
@@ -176,7 +176,7 @@ export function InterviewSummary({
         <div className="flex flex-col gap-3">
           <button
             onClick={onNewInterview}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors"
+            className="w-full gi-btn-primary inline-flex items-center justify-center gap-2 px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none"
           >
             Start New Interview
             <ArrowRight className="w-4 h-4" />

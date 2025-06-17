@@ -450,18 +450,18 @@ export default function InterviewCard() {
   // Hero Page View
   if (!isInterviewStarted) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen gi-gradient-bg">
         <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="gi-heading-1 mb-6">
               <span className="text-5xl sm:text-6xl md:text-7xl">👻</span> Ghost Interviewer
             </h1>
-            <p className="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto mb-16 font-medium">
+            <p className="gi-body-large max-w-3xl mx-auto mb-16 font-medium">
               Practice interviews. Reflect deeply. Get better.
             </p>
             
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+            <div className="max-w-3xl mx-auto gi-card-lg p-8 mb-12">
+              <h2 className="gi-heading-2 mb-8 text-center">
                 Why Ghost Interviewer?
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -469,29 +469,29 @@ export default function InterviewCard() {
                   <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <CheckCircle2 className="w-8 h-8 text-teal-600" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Practice Anywhere</h3>
-                  <p className="text-gray-700">Get interview-ready at your own pace, anytime.</p>
+                  <h3 className="gi-heading-3 mb-2">Practice Anywhere</h3>
+                  <p className="gi-body">Get interview-ready at your own pace, anytime.</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
                   <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <AlertCircle className="w-8 h-8 text-teal-600" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Instant Feedback</h3>
-                  <p className="text-gray-700">Receive AI-powered feedback on your responses.</p>
+                  <h3 className="gi-heading-3 mb-2">Instant Feedback</h3>
+                  <p className="gi-body">Receive AI-powered feedback on your responses.</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
                   <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <HelpCircle className="w-8 h-8 text-teal-600" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Learn & Improve</h3>
-                  <p className="text-gray-700">Track your progress and enhance your skills.</p>
+                  <h3 className="gi-heading-3 mb-2">Learn & Improve</h3>
+                  <p className="gi-body">Track your progress and enhance your skills.</p>
                 </div>
               </div>
             </div>
 
             <button
               onClick={handleShowConfiguration}
-              className="inline-flex items-center px-10 py-5 text-xl font-bold text-white bg-gradient-to-r from-teal-600 to-teal-700 rounded-xl hover:from-teal-700 hover:to-teal-800 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 border-2 border-teal-600"
+              className="gi-btn-primary inline-flex items-center px-10 py-5 text-xl font-bold hover:shadow-2xl hover:-translate-y-0.5"
             >
               Get Started
               <ArrowRight className="ml-3 w-6 h-6" />
@@ -530,11 +530,11 @@ export default function InterviewCard() {
 
   // Interview View
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen gi-gradient-bg p-4">
       <div className="w-full sm:max-w-2xl mx-auto px-4 space-y-4">
         {/* Progress Indicator */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+        <div className="gi-card p-4">
+          <div className="flex justify-between items-center text-sm gi-text-muted mb-2">
             <span>Question {currentQuestionIndex + 1} of {interviewQuestions.length}</span>
             <span>{progressPercentage}% Complete</span>
           </div>
@@ -546,20 +546,20 @@ export default function InterviewCard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6 space-y-6 transition-opacity duration-300">
+        <div className="gi-card-lg p-6 space-y-6 transition-opacity duration-300">
           {/* Question Section */}
           <div className="mb-6 space-y-1">
             {/* Category Label */}
-            <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+            <span className="text-sm font-medium gi-text-muted uppercase tracking-wide">
               {currentQuestion.category}
             </span>
 
             {/* Question Content */}
             <div className="mt-2 bg-gray-50 rounded-lg p-4 space-y-3">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="gi-heading-3">
                 {currentQuestion.question}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm gi-text-muted">
                 Example: &quot;I&apos;m a senior iOS developer with 8+ years of experience building scalable apps.&quot;
               </p>
               
@@ -588,7 +588,7 @@ export default function InterviewCard() {
           {/* Response Section */}
           <div className="mt-6 space-y-4">
             <div className="flex items-start justify-between">
-              <label htmlFor="response" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="response" className="block text-sm font-medium gi-text-secondary">
                 Your Response
               </label>
             </div>
@@ -660,7 +660,7 @@ export default function InterviewCard() {
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="inline-flex items-center justify-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors disabled:opacity-50"
+                className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Answer'}
               </button>
@@ -670,14 +670,14 @@ export default function InterviewCard() {
                   <button
                     onClick={handleFinish}
                     disabled={isAnalyzing}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors disabled:opacity-50"
+                    className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
                   >
                     {isAnalyzing ? 'Analyzing...' : 'Finish Interview'}
                   </button>
                 ) : (
                   <button
                     onClick={proceedToNextQuestion}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-colors"
+                    className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   >
                     Next Question
                   </button>
