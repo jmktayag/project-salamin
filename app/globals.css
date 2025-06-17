@@ -3,16 +3,190 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 243, 244, 246;
+  /* Brand Colors */
+  --primary-teal: rgb(13, 148, 136);
+  --primary-teal-dark: rgb(15, 118, 110);
+  --primary-teal-light: rgb(94, 234, 212);
+  
+  /* Background Colors */
+  --bg-gradient-from: rgba(13, 148, 136, 0.08);
+  --bg-gradient-to: rgba(45, 212, 191, 0.08);
+  --bg-white: rgb(255, 255, 255);
+  --bg-gray-50: rgb(249, 250, 251);
+  --bg-gray-100: rgb(243, 244, 246);
+  
+  /* Text Colors */
+  --text-primary: rgb(17, 24, 39);
+  --text-secondary: rgb(75, 85, 99);
+  --text-muted: rgb(107, 114, 128);
+  --text-white: rgb(255, 255, 255);
+  
+  /* Card Styling */
+  --card-bg: rgb(255, 255, 255);
+  --card-border: rgb(229, 231, 235);
+  --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --card-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --card-radius: 16px;
+  --card-radius-lg: 20px;
+  
+  /* Spacing System */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-base: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  
+  /* Typography */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  
+  /* State Colors */
+  --success-bg: rgb(240, 253, 244);
+  --success-text: rgb(22, 163, 74);
+  --success-border: rgb(187, 247, 208);
+  
+  --warning-bg: rgb(255, 251, 235);
+  --warning-text: rgb(217, 119, 6);
+  --warning-border: rgb(254, 215, 170);
+  
+  --error-bg: rgb(254, 242, 242);
+  --error-text: rgb(220, 38, 38);
+  --error-border: rgb(252, 165, 165);
+  
+  --info-bg: rgb(239, 246, 255);
+  --info-text: rgb(37, 99, 235);
+  --info-border: rgb(147, 197, 253);
 }
 
 html.dark {
-  --foreground-rgb: 255, 255, 255;
-  --background-rgb: 17, 24, 39;
+  --text-primary: rgb(243, 244, 246);
+  --text-secondary: rgb(209, 213, 219);
+  --text-muted: rgb(156, 163, 175);
+  --bg-white: rgb(31, 41, 55);
+  --bg-gray-50: rgb(17, 24, 39);
+  --bg-gray-100: rgb(31, 41, 55);
+  --card-bg: rgb(31, 41, 55);
+  --card-border: rgb(75, 85, 99);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  color: var(--text-primary);
+  background: var(--bg-white);
+}
+
+/* Design System Components */
+.gi-gradient-bg {
+  background: linear-gradient(to bottom, var(--bg-gradient-from), var(--bg-gradient-to));
+}
+
+.gi-card {
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--card-border);
+}
+
+.gi-card-lg {
+  background: var(--card-bg);
+  border-radius: var(--card-radius-lg);
+  box-shadow: var(--card-shadow-lg);
+  border: 1px solid var(--card-border);
+}
+
+.gi-btn-primary {
+  background: linear-gradient(to right, var(--primary-teal), var(--primary-teal-dark));
+  color: var(--text-white);
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: var(--card-shadow);
+}
+
+.gi-btn-primary:hover {
+  background: linear-gradient(to right, var(--primary-teal-dark), rgb(15, 118, 110));
+  box-shadow: var(--card-shadow-lg);
+  transform: translateY(-1px);
+}
+
+.gi-text-primary {
+  color: var(--text-primary);
+}
+
+.gi-text-secondary {
+  color: var(--text-secondary);
+}
+
+.gi-text-muted {
+  color: var(--text-muted);
+}
+
+/* Typography Scale */
+.gi-heading-1 {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.gi-heading-2 {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.gi-heading-3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.gi-body-large {
+  font-size: var(--font-size-lg);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.gi-body {
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Form Elements */
+.gi-textarea {
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.gi-textarea:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+  ring: 2px solid var(--primary-teal);
+}
+
+/* Responsive Typography */
+@media (min-width: 640px) {
+  .gi-heading-1 {
+    font-size: var(--font-size-5xl);
+  }
+}
+
+@media (min-width: 768px) {
+  .gi-heading-1 {
+    font-size: var(--font-size-6xl);
+  }
 }

@@ -73,7 +73,7 @@ export default function InterviewConfiguration({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-secondary/20">
+    <div className="min-h-screen gi-gradient-bg">
       <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -199,10 +199,10 @@ export default function InterviewConfiguration({
               <button
                 type="submit"
                 disabled={!isFormValid}
-                className={`inline-flex items-center px-8 py-3 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 ${
+                className={`inline-flex items-center px-8 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                   isFormValid
-                    ? 'bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500 shadow-lg hover:shadow-xl'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'gi-btn-primary'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed rounded-lg'
                 }`}
               >
                 Start Interview
