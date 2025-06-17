@@ -20,7 +20,7 @@ export class QuestionGenerator extends BaseAIService {
   async generateQuestions(
     position: string,
     interviewType: InterviewType,
-    questionCount: number = 8
+    questionCount: number = 3
   ): Promise<InterviewQuestion[]> {
     try {
       const prompt = this.buildPrompt(position, interviewType, questionCount);
@@ -90,7 +90,7 @@ ${interviewTypeInstructions}
 
 Requirements:
 - Questions should be specific to the ${position} role
-- Vary difficulty levels: 30% Easy, 50% Medium, 20% Hard
+- Vary difficulty levels: 1 Easy, 1 Medium, 1 Hard (for 3 questions)
 - Each question should be clear, professional, and interview-appropriate
 - Provide 2-3 helpful tips for each question to guide the candidate
 - Questions should allow for detailed, meaningful responses

@@ -263,7 +263,7 @@ export default function InterviewCard() {
       const generatedQuestions = await questionGeneratorRef.current.generateQuestions(
         config.position,
         config.interviewType,
-        8 // Generate 8 questions
+        3 // Generate 3 questions for local testing
       );
       
       setInterviewQuestions(generatedQuestions);
