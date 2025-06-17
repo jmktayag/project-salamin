@@ -13,7 +13,7 @@ interface WavConversionOptions {
   bitsPerSample: number;
 }
 
-const TTS_MODEL = 'gemini-2.5-flash-preview-tts';
+const TTS_MODEL = 'gemini-2.5-pro-preview-tts';
 
 /**
  * TextToSpeech class that uses Google's Gemini AI to convert text to speech

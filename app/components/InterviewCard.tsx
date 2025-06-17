@@ -12,9 +12,10 @@ import {
   CheckCircle,
   Lightbulb,
 } from 'lucide-react';
-import { interviewQuestions } from '../data/interviewQuestions';
+import { InterviewQuestion, getFallbackQuestions } from '../data/interviewQuestions';
 import { TextToSpeech } from '../utils/TextToSpeech';
 import { FeedbackGenerator } from '../utils/FeedbackGenerator';
+import { QuestionGenerator } from '../utils/QuestionGenerator';
 import { InterviewSummary } from './InterviewSummary';
 import { InterviewAnalyzer, InterviewAnalysis } from '../utils/InterviewAnalyzer';
 import InterviewConfiguration from './InterviewConfiguration';
@@ -118,6 +119,11 @@ export default function InterviewCard() {
   const [allFeedback, setAllFeedback] = useState<Array<{ question: string; feedback: string }>>([]);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
   
+  // AI Question Generation State
+  const [interviewQuestions, setInterviewQuestions] = useState<InterviewQuestion[]>([]);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [questionGenerationError, setQuestionGenerationError] = useState<string | null>(null);
+  
   // Refs for managing speech recognition and audio playback
   const recognitionRef = useRef<SpeechRecognitionInterface | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -125,8 +131,9 @@ export default function InterviewCard() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const feedbackGeneratorRef = useRef<FeedbackGenerator | null>(null);
   const interviewAnalyzerRef = useRef<InterviewAnalyzer | null>(null);
+  const questionGeneratorRef = useRef<QuestionGenerator | null>(null);
 
-  // Initialize Text-to-Speech, Feedback Generator, and Interview Analyzer with API key
+  // Initialize AI services with API key
   React.useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
@@ -138,6 +145,7 @@ export default function InterviewCard() {
       ttsRef.current = new TextToSpeech(apiKey);
       feedbackGeneratorRef.current = new FeedbackGenerator(apiKey);
       interviewAnalyzerRef.current = new InterviewAnalyzer(apiKey);
+      questionGeneratorRef.current = new QuestionGenerator();
     } catch (error) {
       console.error('Failed to initialize AI services:', error);
     }
@@ -145,6 +153,11 @@ export default function InterviewCard() {
 
   // Get current question from the interview questions array (memoized)
   const currentQuestion = useMemo(() => {
+    // Return null if no questions are available
+    if (interviewQuestions.length === 0) {
+      return null;
+    }
+    
     // Defensive check to prevent index out of bounds
     if (currentQuestionIndex >= interviewQuestions.length) {
       console.warn(`Question index ${currentQuestionIndex} exceeds available questions (${interviewQuestions.length})`);
@@ -159,12 +172,12 @@ export default function InterviewCard() {
     }
     
     return question;
-  }, [currentQuestionIndex, answeredQuestionIds]);
+  }, [currentQuestionIndex, answeredQuestionIds, interviewQuestions]);
 
   // Calculate progress percentage (memoized)
   const progressPercentage = useMemo(() => 
     Math.round(((currentQuestionIndex + 1) / interviewQuestions.length) * 100),
-    [currentQuestionIndex]
+    [currentQuestionIndex, interviewQuestions.length]
   );
 
   // Memoized feedback item style calculator
@@ -229,8 +242,49 @@ export default function InterviewCard() {
 
   // Memoized speak question handler
   const handleSpeakQuestion = useCallback(() => {
-    speakText(currentQuestion.question);
-  }, [speakText, currentQuestion.question]);
+    if (currentQuestion) {
+      speakText(currentQuestion.question);
+    }
+  }, [speakText, currentQuestion]);
+
+  /**
+   * Generate interview questions using AI based on configuration
+   */
+  const generateInterviewQuestions = useCallback(async (config: IInterviewConfiguration) => {
+    if (!questionGeneratorRef.current) {
+      console.error('Question generator not initialized');
+      throw new Error('Question generator not initialized');
+    }
+
+    setIsGeneratingQuestions(true);
+    setQuestionGenerationError(null);
+
+    try {
+      const questionCount = process.env.NODE_ENV === 'development' ? 3 : 8;
+      console.log(`Environment: ${process.env.NODE_ENV}, generating ${questionCount} questions`);
+      
+      const generatedQuestions = await questionGeneratorRef.current.generateQuestions(
+        config.position,
+        config.interviewType,
+        questionCount
+      );
+      
+      setInterviewQuestions(generatedQuestions);
+      console.log(`Generated ${generatedQuestions.length} questions for ${config.position} (${config.interviewType})`);
+      return generatedQuestions;
+    } catch (error) {
+      console.error('Failed to generate questions:', error);
+      setQuestionGenerationError('Failed to generate personalized questions');
+      
+      // Use fallback questions
+      const fallbackQuestions = getFallbackQuestions(config.interviewType);
+      setInterviewQuestions(fallbackQuestions);
+      console.log(`Using ${fallbackQuestions.length} fallback questions for ${config.interviewType} interview`);
+      return fallbackQuestions;
+    } finally {
+      setIsGeneratingQuestions(false);
+    }
+  }, []);
 
   /**
    * Shows the configuration screen
@@ -249,20 +303,38 @@ export default function InterviewCard() {
   /**
    * Starts a new interview session with configuration
    */
-  const handleStartInterview = useCallback((config: IInterviewConfiguration) => {
+  const handleStartInterview = useCallback(async (config: IInterviewConfiguration) => {
     setInterviewConfig(config);
-    setIsInterviewStarted(true);
     setShowConfiguration(false);
     setIsInterviewComplete(false);
     setCurrentQuestionIndex(0);
     setResponse('');
     setHasAnswerSubmitted(false);
-  }, []);
+    setAllFeedback([]);
+    setAnsweredQuestionIds(new Set());
+    setAnalysis(null);
+    
+    try {
+      // Generate questions first
+      await generateInterviewQuestions(config);
+      // Start interview after questions are generated/loaded
+      setIsInterviewStarted(true);
+    } catch (error) {
+      console.error('Failed to start interview:', error);
+      // Don't start interview if question generation fails completely
+      alert('Failed to prepare interview questions. Please try again.');
+    }
+  }, [generateInterviewQuestions]);
 
   /**
    * Handles submission of the current answer and shows feedback
    */
   const handleSubmit = useCallback(async () => {
+    if (!currentQuestion) {
+      alert('No question available.');
+      return;
+    }
+    
     if (response.trim() === '') {
       alert('Please provide an answer before proceeding.');
       return;
@@ -308,7 +380,7 @@ export default function InterviewCard() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [response, currentQuestion.question, currentQuestion.id]);
+  }, [response, currentQuestion]);
 
   const handleFinish = useCallback(async () => {
     if (!interviewAnalyzerRef.current) {
@@ -328,6 +400,24 @@ export default function InterviewCard() {
       setIsAnalyzing(false);
     }
   }, [allFeedback]);
+
+  /**
+   * Restart interview from summary screen
+   */
+  const handleRestartInterview = useCallback(() => {
+    setIsInterviewStarted(false);
+    setIsInterviewComplete(false);
+    setShowConfiguration(false);
+    setCurrentQuestionIndex(0);
+    setResponse('');
+    setHasAnswerSubmitted(false);
+    setAllFeedback([]);
+    setAnsweredQuestionIds(new Set());
+    setAnalysis(null);
+    setInterviewQuestions([]);
+    setQuestionGenerationError(null);
+    setInterviewConfig(null);
+  }, []);
 
   /**
    * Moves to the next question or ends the interview
@@ -350,37 +440,17 @@ export default function InterviewCard() {
       setIsInterviewComplete(true);
       setHasAnswerSubmitted(false);
     }
-  }, [currentQuestionIndex]);
+  }, [currentQuestionIndex, interviewQuestions.length]);
 
   /**
    * Saves feedback for the current question
    */
   const handleSaveFeedback = useCallback(() => {
-    console.log('Saving feedback for question:', currentQuestion.id);
-  }, [currentQuestion.id]);
+    if (currentQuestion) {
+      console.log('Saving feedback for question:', currentQuestion.id);
+    }
+  }, [currentQuestion]);
 
-  /**
-   * Resets the interview state to start over
-   * Ensures clean state to prevent question repetition
-   */
-  const handleRestartInterview = useCallback(() => {
-    console.log('Restarting interview - resetting all state');
-    setIsInterviewStarted(false);
-    setShowConfiguration(false);
-    setInterviewConfig(null);
-    setIsInterviewComplete(false);
-    setCurrentQuestionIndex(0);
-    setResponse('');
-    setAllFeedback([]);
-    setFeedback([]);
-    setAnalysis(null);
-    setHasAnswerSubmitted(false);
-    setIsAnalyzing(false);
-    setAnsweredQuestionIds(new Set());
-    
-    // Verify state reset
-    console.log(`Interview reset - starting with ${interviewQuestions.length} questions available`);
-  }, []);
 
 
 
@@ -444,6 +514,31 @@ export default function InterviewCard() {
         onStartInterview={handleStartInterview}
         onBack={handleBackToLanding}
       />
+    );
+  }
+
+  // Question Generation Loading View
+  if (isGeneratingQuestions) {
+    return (
+      <div className="min-h-screen gi-gradient-bg p-4 flex items-center justify-center">
+        <div className="gi-card-lg p-8 max-w-md mx-auto text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600 mx-auto mb-6"></div>
+          <h2 className="gi-heading-2 mb-4">Preparing Your Interview</h2>
+          <p className="gi-body mb-2">
+            {interviewConfig 
+              ? `Generating personalized questions for ${interviewConfig.position}...`
+              : 'Generating interview questions...'
+            }
+          </p>
+          {questionGenerationError && (
+            <div className="mt-4 p-3 bg-yellow-100 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-700">
+                Using fallback questions - {questionGenerationError}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     );
   }
 
@@ -528,6 +623,27 @@ export default function InterviewCard() {
     );
   }
 
+  // Interview View - Ensure questions are available
+  if (interviewQuestions.length === 0) {
+    return (
+      <div className="min-h-screen gi-gradient-bg p-4 flex items-center justify-center">
+        <div className="gi-card-lg p-8 max-w-md mx-auto text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h2 className="gi-heading-2 mb-4">No Questions Available</h2>
+          <p className="gi-body mb-6">
+            Failed to load interview questions. Please try starting the interview again.
+          </p>
+          <button
+            onClick={handleRestartInterview}
+            className="gi-btn-primary"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Interview View
   return (
     <div className="min-h-screen gi-gradient-bg p-4">
@@ -544,6 +660,11 @@ export default function InterviewCard() {
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
+          {questionGenerationError && (
+            <div className="mt-2 text-xs text-yellow-600 text-center">
+              Using fallback questions for this interview
+            </div>
+          )}
         </div>
 
         <div className="gi-card-lg p-6 space-y-6 transition-opacity duration-300">
@@ -551,13 +672,13 @@ export default function InterviewCard() {
           <div className="mb-6 space-y-1">
             {/* Category Label */}
             <span className="text-sm font-medium gi-text-muted uppercase tracking-wide">
-              {currentQuestion.category}
+              {currentQuestion?.category || 'Loading...'}
             </span>
 
             {/* Question Content */}
             <div className="mt-2 bg-gray-50 rounded-lg p-4 space-y-3">
               <h3 className="gi-heading-3">
-                {currentQuestion.question}
+                {currentQuestion?.question || 'Loading question...'}
               </h3>
               <p className="text-sm gi-text-muted">
                 Example: &quot;I&apos;m a senior iOS developer with 8+ years of experience building scalable apps.&quot;
