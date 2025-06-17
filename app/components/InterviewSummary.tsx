@@ -9,7 +9,7 @@ import {
   ArrowRight,
   FileText
 } from 'lucide-react';
-import type { InterviewAnalysis } from '../utils/InterviewAnalyzer';
+import type { InterviewAnalysis } from '../utils/InterviewAnalysisService';
 import type { InterviewConfiguration } from '../types/interview';
 
 interface InterviewSummaryProps extends InterviewAnalysis {

@@ -21,7 +21,7 @@ const TTS_MODEL = 'gemini-2.5-flash-preview-tts';
  * and handles audio format conversion to WAV when necessary.
  * Includes audio caching for improved performance and reduced API costs.
  */
-export class TextToSpeech extends BaseAIService {
+export class TextToSpeechService extends BaseAIService {
   private ttsConfig = {
     temperature: 1,
     responseModalities: ['audio'],

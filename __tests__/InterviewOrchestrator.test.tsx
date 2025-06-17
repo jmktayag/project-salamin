@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import InterviewCard from '@/app/components/InterviewCard';
+import InterviewOrchestrator from '@/app/components/InterviewOrchestrator';
 
 // Mock environment variables
 const mockEnv = {
@@ -12,8 +12,8 @@ Object.defineProperty(process, 'env', {
 });
 
 // Mock the AI service classes
-jest.mock('@/app/utils/FeedbackGenerator', () => ({
-  FeedbackGenerator: jest.fn().mockImplementation(() => ({
+jest.mock('@/app/utils/InterviewFeedbackService', () => ({
+  InterviewFeedbackService: jest.fn().mockImplementation(() => ({
     generateFeedback: jest.fn().mockResolvedValue([
       { type: 'success', text: 'Good response structure' },
       { type: 'warning', text: 'Could be more detailed' },
@@ -22,8 +22,8 @@ jest.mock('@/app/utils/FeedbackGenerator', () => ({
   }))
 }));
 
-jest.mock('@/app/utils/InterviewAnalyzer', () => ({
-  InterviewAnalyzer: jest.fn().mockImplementation(() => ({
+jest.mock('@/app/utils/InterviewAnalysisService', () => ({
+  InterviewAnalysisService: jest.fn().mockImplementation(() => ({
     analyzeInterview: jest.fn().mockResolvedValue({
       strengths: ['Clear communication'],
       weaknesses: ['Needs more detail'],
@@ -35,8 +35,8 @@ jest.mock('@/app/utils/InterviewAnalyzer', () => ({
   }))
 }));
 
-jest.mock('@/app/utils/TextToSpeech', () => ({
-  TextToSpeech: jest.fn().mockImplementation(() => ({
+jest.mock('@/app/utils/TextToSpeechService', () => ({
+  TextToSpeechService: jest.fn().mockImplementation(() => ({
     generateSpeech: jest.fn().mockResolvedValue(new ArrayBuffer(8))
   }))
 }));
@@ -57,14 +57,14 @@ Object.defineProperty(window, 'webkitSpeechRecognition', {
   value: window.SpeechRecognition
 });
 
-describe('InterviewCard', () => {
+describe('InterviewOrchestrator', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('Initial State', () => {
     it('renders hero page when interview not started', () => {
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       expect(screen.getByText('Ghost Interviewer')).toBeInTheDocument();
       expect(screen.getByText('Practice interviews. Reflect deeply. Get better.')).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe('InterviewCard', () => {
     });
 
     it('displays feature highlights on hero page', () => {
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       expect(screen.getByText('Practice Anywhere')).toBeInTheDocument();
       expect(screen.getByText('Instant Feedback')).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe('InterviewCard', () => {
   describe('Interview Flow', () => {
     it('starts interview when start button is clicked', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       const startButton = screen.getByRole('button', { name: /start your interview/i });
       await user.click(startButton);
@@ -96,7 +96,7 @@ describe('InterviewCard', () => {
 
     it('displays progress indicator correctly', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -106,7 +106,7 @@ describe('InterviewCard', () => {
 
     it('allows user to type response', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -118,7 +118,7 @@ describe('InterviewCard', () => {
 
     it('submits answer and shows feedback', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -157,7 +157,7 @@ describe('InterviewCard', () => {
       // Mock alert
       window.alert = jest.fn();
       
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -169,7 +169,7 @@ describe('InterviewCard', () => {
 
     it('shows next question button after feedback', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -185,7 +185,7 @@ describe('InterviewCard', () => {
 
     it('shows finish interview button on last question', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -219,7 +219,7 @@ describe('InterviewCard', () => {
   describe('Speech Recognition', () => {
     it('toggles recording state when microphone button is clicked', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -233,7 +233,7 @@ describe('InterviewCard', () => {
   describe('Text-to-Speech', () => {
     it('shows audio control button when TTS is available', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -244,7 +244,7 @@ describe('InterviewCard', () => {
   describe('Interview Summary', () => {
     it('shows analysis when interview is completed', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -279,7 +279,7 @@ describe('InterviewCard', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
@@ -305,7 +305,7 @@ describe('InterviewCard', () => {
   describe('Accessibility', () => {
     it('has proper ARIA labels and roles', async () => {
       const user = userEvent.setup();
-      render(<InterviewCard />);
+      render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       

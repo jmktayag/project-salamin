@@ -1,4 +1,4 @@
-import { InterviewAnalyzer, InterviewAnalysis, FeedbackItem, ComprehensiveQuestionData, QuestionFeedback } from '@/app/utils/InterviewAnalyzer';
+import { InterviewAnalysisService, InterviewAnalysis, FeedbackItem, ComprehensiveQuestionData, QuestionFeedback } from '@/app/utils/InterviewAnalysisService';
 import { GoogleGenAI } from '@google/genai';
 
 // Mock the Google GenAI module
@@ -12,8 +12,8 @@ jest.mock('@google/genai', () => ({
 
 const mockGoogleGenAI = GoogleGenAI as jest.MockedClass<typeof GoogleGenAI>;
 
-describe('InterviewAnalyzer', () => {
-  let interviewAnalyzer: InterviewAnalyzer;
+describe('InterviewAnalysisService', () => {
+  let interviewAnalyzer: InterviewAnalysisService;
   let mockGenerateContent: jest.Mock;
 
   beforeEach(() => {
@@ -24,7 +24,7 @@ describe('InterviewAnalyzer', () => {
       }
     }) as any);
     
-    interviewAnalyzer = new InterviewAnalyzer('test-api-key');
+    interviewAnalyzer = new InterviewAnalysisService('test-api-key');
   });
 
   afterEach(() => {

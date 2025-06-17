@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { InterviewSummary } from '@/app/components/InterviewSummary';
-import type { InterviewAnalysis } from '@/app/utils/InterviewAnalyzer';
+import type { InterviewAnalysis } from '@/app/utils/InterviewAnalysisService';
 
 const mockAnalysis: InterviewAnalysis = {
   strengths: [

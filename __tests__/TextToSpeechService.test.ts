@@ -1,4 +1,4 @@
-import { TextToSpeech } from '@/app/utils/TextToSpeech';
+import { TextToSpeechService } from '@/app/utils/TextToSpeechService';
 import { GoogleGenAI } from '@google/genai';
 import { AudioCacheManager } from '@/app/utils/AudioCacheManager';
 
@@ -37,8 +37,8 @@ jest.mock('@/app/utils/AudioCacheManager', () => ({
 const mockGoogleGenAI = GoogleGenAI as jest.MockedClass<typeof GoogleGenAI>;
 const mockAudioCacheManager = AudioCacheManager as jest.MockedClass<typeof AudioCacheManager>;
 
-describe('TextToSpeech', () => {
-  let textToSpeech: TextToSpeech;
+describe('TextToSpeechService', () => {
+  let textToSpeech: TextToSpeechService;
   let mockGenerateContentStream: jest.Mock;
   let mockCacheManager: jest.Mocked<AudioCacheManager>;
 
@@ -63,7 +63,7 @@ describe('TextToSpeech', () => {
     
     mockAudioCacheManager.mockImplementation(() => mockCacheManager);
     
-    textToSpeech = new TextToSpeech('test-api-key');
+    textToSpeech = new TextToSpeechService('test-api-key');
   });
 
   afterEach(() => {
