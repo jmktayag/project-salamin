@@ -1,4 +1,4 @@
-import { InterviewAnalysisService, InterviewAnalysis, FeedbackItem, ComprehensiveQuestionData, QuestionFeedback } from '@/app/utils/InterviewAnalysisService';
+import { InterviewAnalysisService, InterviewAnalysis } from '@/app/utils/InterviewAnalysisService';
 import { GoogleGenAI } from '@google/genai';
 
 // Mock the Google GenAI module
@@ -33,16 +33,16 @@ describe('InterviewAnalysisService', () => {
 
   describe('constructor', () => {
     it('should throw error when API key is not provided', () => {
-      expect(() => new InterviewAnalyzer('')).toThrow('Gemini API key is required');
+      expect(() => new InterviewAnalysisService('')).toThrow('Gemini API key is required');
     });
 
     it('should create instance with valid API key', () => {
-      expect(() => new InterviewAnalyzer('valid-key')).not.toThrow();
+      expect(() => new InterviewAnalysisService('valid-key')).not.toThrow();
     });
   });
 
   describe('analyzeInterview', () => {
-    const mockFeedback: FeedbackItem[] = [
+    const mockFeedback = [
       { question: 'Tell me about yourself', feedback: 'I am a developer' },
       { question: 'What are your strengths?', feedback: 'I am good at problem solving' }
     ];
@@ -57,22 +57,41 @@ describe('InterviewAnalysisService', () => {
     });
 
     it('should expose static utility methods', () => {
-      expect(InterviewAnalyzer.getScoreThresholds()).toEqual({
+      expect(InterviewAnalysisService.getScoreThresholds()).toEqual({
         STRONG_HIRE: 90,
         HIRE: 75,
         WEAK_HIRE: 60
       });
       
-      expect(InterviewAnalyzer.getScoreWeights()).toEqual({
-        relevanceAndClarity: 50,
-        rolefit: 30,
-        enthusiasmAndGrowth: 20
+      expect(InterviewAnalysisService.getScoreWeights()).toEqual({
+        technicalCompetencyRelevance: 40,
+        communicationStructure: 30,
+        problemSolvingCriticalThinking: 20,
+        preparationCulturalFit: 10
       });
       
-      expect(InterviewAnalyzer.calculateVerdictFromScore(95)).toBe('Strong Hire');
-      expect(InterviewAnalyzer.calculateVerdictFromScore(80)).toBe('Hire');
-      expect(InterviewAnalyzer.calculateVerdictFromScore(65)).toBe('Weak Hire');
-      expect(InterviewAnalyzer.calculateVerdictFromScore(40)).toBe('No Hire');
+      expect(InterviewAnalysisService.calculateVerdictFromScore(95)).toBe('Strong Hire');
+      expect(InterviewAnalysisService.calculateVerdictFromScore(80)).toBe('Hire');
+      expect(InterviewAnalysisService.calculateVerdictFromScore(65)).toBe('Weak Hire');
+      expect(InterviewAnalysisService.calculateVerdictFromScore(40)).toBe('No Hire');
+    });
+
+    it('should expose new detailed scoring rubric', () => {
+      const rubric = InterviewAnalysisService.getScoringRubric();
+      
+      expect(rubric.technicalCompetencyRelevance.weight).toBe(40);
+      expect(rubric.communicationStructure.weight).toBe(30);
+      expect(rubric.problemSolvingCriticalThinking.weight).toBe(20);
+      expect(rubric.preparationCulturalFit.weight).toBe(10);
+      
+      expect(rubric.technicalCompetencyRelevance.criteria).toContain('Demonstrates actual knowledge and skills relevant to the role');
+    });
+
+    it('should expose evaluation principles', () => {
+      const principles = InterviewAnalysisService.getEvaluationPrinciples();
+      
+      expect(principles).toContain('Be strict and fair in giving feedback and scoring');
+      expect(principles).toContain('Only highlight genuine strengths that demonstrate real competency');
     });
 
     it('should create comprehensive interview data', () => {
@@ -81,12 +100,12 @@ describe('InterviewAnalysisService', () => {
         { id: '2', question: 'What are your strengths?', category: 'Skills', difficulty: 'Medium' as const, tips: ['Give examples'] }
       ];
       const responses = ['I am a developer', 'I am good at problem solving'];
-      const feedbackArrays: QuestionFeedback[][] = [
+      const feedbackArrays: Array<{ type: 'success' | 'warning' | 'suggestion'; text: string }[]> = [
         [{ type: 'success', text: 'Good start' }],
         [{ type: 'suggestion', text: 'Provide more details' }]
       ];
 
-      const result = InterviewAnalyzer.createComprehensiveInterviewData(questions, responses, feedbackArrays);
+      const result = InterviewAnalysisService.createComprehensiveInterviewData(questions, responses, feedbackArrays);
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
@@ -103,25 +122,25 @@ describe('InterviewAnalysisService', () => {
     it('should throw error for mismatched array lengths in createComprehensiveInterviewData', () => {
       const questions = [{ id: '1', question: 'Test', category: 'Personal', difficulty: 'Easy' as const, tips: [] }];
       const responses = ['Response 1', 'Response 2']; // Different length
-      const feedbackArrays: QuestionFeedback[][] = [[]];
+      const feedbackArrays = [[]];
 
       expect(() => {
-        InterviewAnalyzer.createComprehensiveInterviewData(questions, responses, feedbackArrays);
+        InterviewAnalysisService.createComprehensiveInterviewData(questions, responses, feedbackArrays);
       }).toThrow('Questions, responses, and feedback arrays must have the same length');
     });
 
     it('should analyze interview with comprehensive data', async () => {
-      const mockComprehensiveData: ComprehensiveQuestionData[] = [
+      const mockComprehensiveData = [
         {
           id: '1',
           question: 'Tell me about yourself',
           category: 'Personal',
-          difficulty: 'Easy',
+          difficulty: 'Easy' as const,
           tips: ['Be concise', 'Focus on relevant experience'],
           userResponse: 'I am a senior developer with 5 years experience',
           aiFeedback: [
-            { type: 'success', text: 'Good length and relevant' },
-            { type: 'suggestion', text: 'Could add specific technologies' }
+            { type: 'success' as const, text: 'Good length and relevant' },
+            { type: 'suggestion' as const, text: 'Could add specific technologies' }
           ]
         }
       ];
@@ -153,24 +172,15 @@ describe('InterviewAnalysisService', () => {
         contents: [{ 
           role: 'user', 
           parts: [{ 
-            text: expect.stringContaining('COMPREHENSIVE INTERVIEW DATA') 
+            text: expect.stringContaining('You are an expert interview evaluator') 
           }] 
         }],
         config: {
-          temperature: 0.3,
-          topK: 20,
-          topP: 0.8
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95
         }
       });
-
-      // Verify comprehensive prompt includes all data
-      const callArgs = mockGenerateContent.mock.calls[0][0];
-      const promptText = callArgs.contents[0].parts[0].text;
-      
-      expect(promptText).toContain('Personal | Easy');
-      expect(promptText).toContain('SUCCESS: Good length and relevant');
-      expect(promptText).toContain('Be concise');
-      expect(promptText).toContain('CONTEXTUAL ANALYSIS FACTORS');
     });
 
     it('should analyze interview successfully with basic feedback data', async () => {
@@ -215,7 +225,7 @@ describe('InterviewAnalysisService', () => {
 
     it('should handle empty comprehensive data', async () => {
       await expect(interviewAnalyzer.analyzeInterviewComprehensive([]))
-        .rejects.toThrow('Interview data is required for analysis');
+        .rejects.toThrow('Comprehensive interview data is required for analysis');
     });
 
     it('should validate difficulty values in comprehensive data', async () => {
@@ -315,6 +325,46 @@ describe('InterviewAnalysisService', () => {
         expect(promptText).toContain(item.question);
         expect(promptText).toContain(item.feedback);
       });
+    });
+
+    it('should include stricter evaluation criteria in prompt', async () => {
+      const mockAnalysis: InterviewAnalysis = {
+        strengths: ['Good'],
+        weaknesses: ['Needs work'],
+        suggestions: ['Practice more'],
+        score: 75,
+        verdict: 'Weak Hire',
+        summary: 'Okay candidate'
+      };
+
+      mockGenerateContent.mockResolvedValue({
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify(mockAnalysis)
+            }]
+          }
+        }]
+      });
+
+      await interviewAnalyzer.analyzeInterview(mockFeedback);
+
+      const callArgs = mockGenerateContent.mock.calls[0][0];
+      const promptText = callArgs.contents[0].parts[0].text;
+      
+      // Check for expert evaluator persona
+      expect(promptText).toContain('You are an expert interview evaluator');
+      expect(promptText).toContain('Be strict and fair in giving feedback and scoring');
+      
+      // Check for detailed scoring criteria
+      expect(promptText).toContain('TECHNICAL COMPETENCY & RELEVANCE (40 points)');
+      expect(promptText).toContain('COMMUNICATION & STRUCTURE (30 points)');
+      expect(promptText).toContain('PROBLEM-SOLVING & CRITICAL THINKING (20 points)');
+      expect(promptText).toContain('PREPARATION & CULTURAL FIT (10 points)');
+      
+      // Check for strict thresholds explanation
+      expect(promptText).toContain('Be rigorous in your assessment');
+      expect(promptText).toContain('Do not inflate scores');
     });
 
     it('should handle network errors', async () => {
