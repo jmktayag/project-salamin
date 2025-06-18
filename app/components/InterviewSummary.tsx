@@ -8,8 +8,6 @@ import {
   Target,
   ArrowRight,
   FileText,
-  TrendingUp,
-  Award,
   BookOpen
 } from 'lucide-react';
 import type { InterviewAnalysis } from '../utils/InterviewAnalysisService';
@@ -130,34 +128,6 @@ export function InterviewSummary({
           )}
         </div>
 
-        {/* Growth Opportunities */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
-            </div>
-            <h3 className="gi-heading-3 text-slate-800">Growth Opportunities</h3>
-            <div className="flex-1 h-px bg-blue-200"></div>
-          </div>
-          {weaknesses.length > 0 ? (
-            <ul className="space-y-3" role="list" aria-label="Areas to focus on for improvement">
-              {weaknesses.map((weakness, index) => (
-                <li key={index} className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                  <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                    <TrendingUp className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <span className="gi-body leading-relaxed text-slate-700">{weakness}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="text-center p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
-              <Award className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-              <p className="text-slate-600 font-medium mb-1">Excellent Performance</p>
-              <p className="text-sm text-slate-500">No major areas for improvement identified. Keep up the great work!</p>
-            </div>
-          )}
-        </div>
 
         {/* Action Steps */}
         <div className="mb-8">
