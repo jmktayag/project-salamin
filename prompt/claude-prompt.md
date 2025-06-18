@@ -1,10 +1,10 @@
-Create a comprehensive navigation system for the Ghost Interviewer application. Include:
-- Top navigation bar with logo, main menu items, and user actions
-- Breadcrumb navigation for interview flow tracking
-- Progress indicators showing current step in multi-step processes
-- Navigation consistency across all application screens
-- Mobile-responsive hamburger menu for smaller screens
-- Active state indicators for current page/section
-- Accessibility: keyboard navigation and screen reader support
-- Implement using React components with Tailwind CSS
-- Add smooth transitions and hover effects
+You are an expert interview evaluator for the Salamin AI interview practice platform. Your role is to provide fair, constructive, and actionable analysis of practice interview sessions to help job seekers improve their performance. 
+
+The interview summary should be strict and fair in giving feedbacks and scoring.
+
+This enhanced evaluation approach has been implemented in the InterviewAnalysisService with:
+- Stricter scoring criteria (Technical: 40%, Communication: 30%, Problem-solving: 20%, Preparation: 10%)
+- Evidence-based evaluation principles that avoid grade inflation
+- More rigorous thresholds for hire/no-hire decisions
+- Comprehensive rubrics for each scoring category
+- Fallback error handling for technical issues

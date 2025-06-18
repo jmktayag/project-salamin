@@ -28,49 +28,82 @@ export class InterviewAnalysisService extends BaseAIService {
     });
 
     const model = 'gemini-2.0-flash-lite';
-    const prompt = `
-      Analyze the following interview feedback and provide a comprehensive assessment.
-      Focus on identifying key strengths, areas for improvement, and specific suggestions.
-      Calculate a final score out of 100 based on:
-      - Relevance and clarity of answers (50 points)
-      - Fit for the role (30 points)
-      - Enthusiasm and growth potential (20 points)
-      
-      Provide a verdict based on the score:
-      - 90-100: Strong Hire
-      - 75-89: Hire
-      - 60-74: Weak Hire
-      - Below 60: No Hire
+    const prompt = `You are an expert interview evaluator for the Salamin AI interview practice platform. Your role is to provide fair, constructive, and actionable analysis of practice interview sessions to help job seekers improve their performance.
 
-      Interview Feedback:
-      ${feedback.map(f => `Q: ${f.question}\nA: ${f.feedback}`).join('\n\n')}
+EVALUATION PRINCIPLES:
+- Be strict and fair in giving feedback and scoring
+- Only highlight genuine strengths that demonstrate real competency
+- Identify specific areas where performance falls short of industry standards
+- Provide actionable, evidence-based suggestions for improvement
+- Maintain professional standards while being constructive
 
-      Please provide your analysis in the following JSON format:
-      {
-        "strengths": string[],
-        "weaknesses": string[],
-        "suggestions": string[],
-        "score": number,
-        "verdict": "Strong Hire" | "Hire" | "Weak Hire" | "No Hire",
-        "summary": string
-      }
-    `;
+SCORING CRITERIA (Total: 100 points):
 
-    return await this.withRetry(async () => {
-      const responseText = await this.generateContent({
-        model,
-        prompt,
-        config: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95
-        }
+1. TECHNICAL COMPETENCY & RELEVANCE (40 points):
+   - Demonstrates actual knowledge and skills relevant to the role
+   - Provides specific examples and concrete evidence
+   - Shows understanding of industry practices and standards
+   - Answers directly address the question asked
+
+2. COMMUNICATION & STRUCTURE (30 points):
+   - Clear, well-organized responses with logical flow
+   - Professional communication style appropriate for interviews
+   - Effective use of examples and storytelling techniques
+   - Demonstrates active listening and comprehension
+
+3. PROBLEM-SOLVING & CRITICAL THINKING (20 points):
+   - Shows analytical approach to challenges
+   - Demonstrates ability to break down complex problems
+   - Provides thoughtful consideration of trade-offs and alternatives
+   - Shows learning from past experiences
+
+4. PREPARATION & CULTURAL FIT (10 points):
+   - Evidence of research about the role/company
+   - Shows genuine interest and motivation
+   - Aligns with professional expectations and values
+   - Demonstrates career growth mindset
+
+STRICT SCORING THRESHOLDS:
+- 90-100: Strong Hire (Exceptional performance, ready for the role)
+- 75-89: Hire (Good performance with minor areas for improvement)
+- 60-74: Weak Hire (Shows potential but significant gaps need addressing)
+- Below 60: No Hire (Major deficiencies that require substantial development)
+
+IMPORTANT: Be rigorous in your assessment. A score of 75+ should indicate genuine readiness for professional interviews. Do not inflate scores. Focus on evidence-based evaluation rather than potential.
+
+Interview Q&A Data:
+${feedback.map(f => `Question: ${f.question}\nResponse: ${f.feedback}`).join('\n\n')}
+
+Provide your strict, fair evaluation in the following JSON format:
+{
+  "strengths": ["List only genuine, evidence-based strengths demonstrated in responses"],
+  "weaknesses": ["Identify specific areas where performance falls short of professional standards"],
+  "suggestions": ["Provide concrete, actionable improvement recommendations with specific steps"],
+  "score": number,
+  "verdict": "Strong Hire" | "Hire" | "Weak Hire" | "No Hire",
+  "summary": "A comprehensive assessment that honestly evaluates performance against industry standards"
+}`;
+
+    try {
+      return await this.withRetry(async () => {
+        const responseText = await this.generateContent({
+          model,
+          prompt,
+          config: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95
+          }
+        });
+
+        const analysis = this.parseJSONOptimized<InterviewAnalysis>(responseText);
+        this.validateAnalysis(analysis);
+        return analysis;
       });
-
-      const analysis = this.parseJSONOptimized<InterviewAnalysis>(responseText);
-      this.validateAnalysis(analysis);
-      return analysis;
-    });
+    } catch (error) {
+      // Return fallback analysis instead of throwing
+      return this.getFallbackAnalysis();
+    }
   }
 
   private validateAnalysis(analysis: InterviewAnalysis): void {
@@ -99,6 +132,17 @@ export class InterviewAnalysisService extends BaseAIService {
     }
   }
 
+  private getFallbackAnalysis(): InterviewAnalysis {
+    return {
+      strengths: [],
+      weaknesses: ['Unable to properly evaluate responses due to technical issues'],
+      suggestions: ['Please try the interview again to get proper feedback'],
+      score: 50,
+      verdict: 'Weak Hire',
+      summary: 'Analysis could not be completed due to technical issues. Please retry the interview for accurate feedback.'
+    };
+  }
+
   // Static utility methods for backward compatibility
   static getScoreThresholds() {
     return {
@@ -110,10 +154,64 @@ export class InterviewAnalysisService extends BaseAIService {
 
   static getScoreWeights() {
     return {
-      relevanceAndClarity: 50,
-      rolefit: 30,
-      enthusiasmAndGrowth: 20
+      technicalCompetencyRelevance: 40,
+      communicationStructure: 30,
+      problemSolvingCriticalThinking: 20,
+      preparationCulturalFit: 10
     };
+  }
+
+  // New method to get detailed scoring rubric
+  static getScoringRubric() {
+    return {
+      technicalCompetencyRelevance: {
+        weight: 40,
+        criteria: [
+          'Demonstrates actual knowledge and skills relevant to the role',
+          'Provides specific examples and concrete evidence',
+          'Shows understanding of industry practices and standards',
+          'Answers directly address the question asked'
+        ]
+      },
+      communicationStructure: {
+        weight: 30,
+        criteria: [
+          'Clear, well-organized responses with logical flow',
+          'Professional communication style appropriate for interviews',
+          'Effective use of examples and storytelling techniques',
+          'Demonstrates active listening and comprehension'
+        ]
+      },
+      problemSolvingCriticalThinking: {
+        weight: 20,
+        criteria: [
+          'Shows analytical approach to challenges',
+          'Demonstrates ability to break down complex problems',
+          'Provides thoughtful consideration of trade-offs and alternatives',
+          'Shows learning from past experiences'
+        ]
+      },
+      preparationCulturalFit: {
+        weight: 10,
+        criteria: [
+          'Evidence of research about the role/company',
+          'Shows genuine interest and motivation',
+          'Aligns with professional expectations and values',
+          'Demonstrates career growth mindset'
+        ]
+      }
+    };
+  }
+
+  // Method to get evaluation principles
+  static getEvaluationPrinciples() {
+    return [
+      'Be strict and fair in giving feedback and scoring',
+      'Only highlight genuine strengths that demonstrate real competency',
+      'Identify specific areas where performance falls short of industry standards',
+      'Provide actionable, evidence-based suggestions for improvement',
+      'Maintain professional standards while being constructive'
+    ];
   }
 
   static calculateVerdictFromScore(score: number): 'Strong Hire' | 'Hire' | 'Weak Hire' | 'No Hire' {

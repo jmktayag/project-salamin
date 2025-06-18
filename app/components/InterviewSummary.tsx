@@ -113,11 +113,13 @@ export function InterviewSummary({
             <div className="flex-1 h-px bg-green-200"></div>
           </div>
           {strengths.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-3" role="list" aria-label="Areas where you excelled">
               {strengths.map((strength, index) => (
-                <li key={index} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
-                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="gi-body leading-relaxed text-green-800">{strength}</span>
+                <li key={index} className="flex items-start gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-emerald-200">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  </div>
+                  <span className="gi-body leading-relaxed text-slate-700">{strength}</span>
                 </li>
               ))}
             </ul>
