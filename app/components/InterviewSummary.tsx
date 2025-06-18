@@ -7,7 +7,10 @@ import {
   Star,
   Target,
   ArrowRight,
-  FileText
+  FileText,
+  TrendingUp,
+  Award,
+  BookOpen
 } from 'lucide-react';
 import type { InterviewAnalysis } from '../utils/InterviewAnalysisService';
 import type { InterviewConfiguration } from '../types/interview';
@@ -102,73 +105,86 @@ export function InterviewSummary({
 
         {/* Strengths */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-green-50 rounded-lg">
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
-            <h3 className="gi-heading-3">Key Strengths</h3>
+            <h3 className="gi-heading-3 text-slate-800">What You Did Well</h3>
+            <div className="flex-1 h-px bg-green-200"></div>
           </div>
           {strengths.length > 0 ? (
             <ul className="space-y-2">
               {strengths.map((strength, index) => (
-                <li key={index} className="flex items-start gap-2 p-2 bg-green-50/50 rounded-lg">
-                  <span className="text-green-600 mt-1">•</span>
-                  <span className="gi-body leading-relaxed">{strength}</span>
+                <li key={index} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="gi-body leading-relaxed text-green-800">{strength}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-400 italic text-center p-4 bg-gray-50 rounded-lg">
-              No notable strengths were identified.
-            </p>
+            <div className="text-center p-6 bg-gray-50 rounded-xl border border-gray-200">
+              <BookOpen className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+              <p className="text-gray-700 font-medium mb-1">Building Your Foundation</p>
+              <p className="text-sm text-gray-600">Every expert was once a beginner. Keep practicing to discover your strengths!</p>
+            </div>
           )}
         </div>
 
-        {/* Areas for Improvement */}
+        {/* Growth Opportunities */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 bg-yellow-50 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
             </div>
-            <h3 className="gi-heading-3">Areas for Improvement</h3>
+            <h3 className="gi-heading-3 text-slate-800">Growth Opportunities</h3>
+            <div className="flex-1 h-px bg-blue-200"></div>
           </div>
           {weaknesses.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-3" role="list" aria-label="Areas to focus on for improvement">
               {weaknesses.map((weakness, index) => (
-                <li key={index} className="flex items-start gap-2 p-2 bg-yellow-50/50 rounded-lg">
-                  <span className="text-yellow-600 mt-1">•</span>
-                  <span className="gi-body leading-relaxed">{weakness}</span>
+                <li key={index} className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <span className="gi-body leading-relaxed text-slate-700">{weakness}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-400 italic text-center p-4 bg-gray-50 rounded-lg">
-              No specific areas for improvement were identified.
-            </p>
+            <div className="text-center p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
+              <Award className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+              <p className="text-slate-600 font-medium mb-1">Excellent Performance</p>
+              <p className="text-sm text-slate-500">No major areas for improvement identified. Keep up the great work!</p>
+            </div>
           )}
         </div>
 
-        {/* Suggestions */}
+        {/* Action Steps */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <Lightbulb className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-violet-50 rounded-lg">
+              <Lightbulb className="w-5 h-5 text-violet-600" />
             </div>
-            <h3 className="gi-heading-3">Suggestions for Improvement</h3>
+            <h3 className="gi-heading-3 text-slate-800">Your Next Steps</h3>
+            <div className="flex-1 h-px bg-violet-200"></div>
           </div>
           {suggestions.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-3" role="list" aria-label="Recommended next steps">
               {suggestions.map((suggestion, index) => (
-                <li key={index} className="flex items-start gap-2 p-2 bg-blue-50/50 rounded-lg">
-                  <span className="text-blue-600 mt-1">•</span>
-                  <span className="gi-body leading-relaxed">{suggestion}</span>
+                <li key={index} className="flex items-start gap-3 p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-100">
+                  <div className="flex-shrink-0 w-6 h-6 bg-violet-100 rounded-full flex items-center justify-center mt-0.5">
+                    <span className="text-violet-600 font-semibold text-sm">{index + 1}</span>
+                  </div>
+                  <span className="gi-body leading-relaxed text-slate-700">{suggestion}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-400 italic text-center p-4 bg-gray-50 rounded-lg">
-              No specific suggestions were provided.
-            </p>
+            <div className="text-center p-6 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200">
+              <Lightbulb className="w-8 h-8 text-violet-500 mx-auto mb-2" />
+              <p className="text-slate-600 font-medium mb-1">Keep Growing</p>
+              <p className="text-sm text-slate-500">Continue practicing with different interview types to build confidence!</p>
+            </div>
           )}
         </div>
 

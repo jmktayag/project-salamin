@@ -1,6 +1,13 @@
 'use client';
 
 import React, { useRef, useState, useMemo, useCallback } from 'react';
+
+// Question count constants
+const QUESTION_COUNT = {
+  DEVELOPMENT: 1,
+  PRODUCTION: 5,
+} as const;
+
 import {
   CheckCircle2,
   AlertCircle,
@@ -260,7 +267,7 @@ export default function InterviewOrchestrator() {
     setQuestionGenerationError(null);
 
     try {
-      const questionCount = process.env.NODE_ENV === 'development' ? 3 : 8;
+      const questionCount = process.env.NODE_ENV === 'development' ? QUESTION_COUNT.DEVELOPMENT : QUESTION_COUNT.PRODUCTION;
       console.log(`Environment: ${process.env.NODE_ENV}, generating ${questionCount} questions`);
       
       const generatedQuestions = await questionGeneratorRef.current.generateQuestions(
