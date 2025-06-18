@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useMemo, useCallback } from 'react';
+import { useNavigation } from './navigation/NavigationProvider';
 
 // Question count constants
 const QUESTION_COUNT = {
@@ -108,6 +109,14 @@ const FEEDBACK_STYLES = {
  * including speech recognition, text-to-speech, and feedback
  */
 export default function InterviewOrchestrator() {
+  // Navigation context
+  const { 
+    setCurrentPage, 
+    setInterviewStep, 
+    setInterviewStarted,
+    registerResetToHome
+  } = useNavigation();
+
   // State management
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [showConfiguration, setShowConfiguration] = useState(false);
@@ -298,14 +307,19 @@ export default function InterviewOrchestrator() {
    */
   const handleShowConfiguration = useCallback(() => {
     setShowConfiguration(true);
-  }, []);
+    setCurrentPage('interview');
+    setInterviewStep('configuration');
+    setInterviewStarted(true);
+  }, [setCurrentPage, setInterviewStep, setInterviewStarted]);
 
   /**
    * Goes back to landing page from configuration
    */
   const handleBackToLanding = useCallback(() => {
     setShowConfiguration(false);
-  }, []);
+    setCurrentPage('home');
+    setInterviewStarted(false);
+  }, [setCurrentPage, setInterviewStarted]);
 
   /**
    * Starts a new interview session with configuration
@@ -320,6 +334,11 @@ export default function InterviewOrchestrator() {
     setAllFeedback([]);
     setAnsweredQuestionIds(new Set());
     setAnalysis(null);
+    
+    // Update navigation state
+    setCurrentPage('interview');
+    setInterviewStep('interview');
+    setInterviewStarted(true);
     
     // Clear TTS audio cache for new interview session
     if (ttsRef.current) {
@@ -340,7 +359,7 @@ export default function InterviewOrchestrator() {
       // Don't start interview if question generation fails completely
       alert('Failed to prepare interview questions. Please try again.');
     }
-  }, [generateInterviewQuestions]);
+  }, [generateInterviewQuestions, setCurrentPage, setInterviewStep, setInterviewStarted]);
 
   /**
    * Handles submission of the current answer and shows feedback
@@ -409,13 +428,14 @@ export default function InterviewOrchestrator() {
       const analysis = await interviewAnalyzerRef.current.analyzeInterview(allFeedback);
       setAnalysis(analysis);
       setIsInterviewComplete(true);
+      setInterviewStep('summary');
     } catch (error) {
       console.error('Error generating interview analysis:', error);
       alert('Failed to generate interview analysis. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
-  }, [allFeedback]);
+  }, [allFeedback, setInterviewStep]);
 
   /**
    * Restart interview from summary screen
@@ -433,7 +453,16 @@ export default function InterviewOrchestrator() {
     setInterviewQuestions([]);
     setQuestionGenerationError(null);
     setInterviewConfig(null);
-  }, []);
+    
+    // Reset navigation state
+    setCurrentPage('home');
+    setInterviewStarted(false);
+  }, [setCurrentPage, setInterviewStarted]);
+
+  // Register reset to home function with navigation
+  React.useEffect(() => {
+    registerResetToHome(handleRestartInterview);
+  }, [registerResetToHome, handleRestartInterview]);
 
   /**
    * Moves to the next question or ends the interview
@@ -454,9 +483,10 @@ export default function InterviewOrchestrator() {
       // End interview after last question
       console.log('Interview completed - all questions answered');
       setIsInterviewComplete(true);
+      setInterviewStep('summary');
       setHasAnswerSubmitted(false);
     }
-  }, [currentQuestionIndex, interviewQuestions.length]);
+  }, [currentQuestionIndex, interviewQuestions.length, setInterviewStep]);
 
   /**
    * Saves feedback for the current question
