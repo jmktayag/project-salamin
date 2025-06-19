@@ -222,38 +222,6 @@ export default function InterviewConfiguration({
           </form>
         </div>
 
-        {/* Progress Indicator */}
-        <div className="max-w-2xl mx-auto mt-8">
-          <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-semibold">
-                ✓
-              </div>
-              <span className="ml-2">Welcome</span>
-            </div>
-            <div className="w-8 h-px bg-gray-300"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-semibold">
-                2
-              </div>
-              <span className="ml-2 font-medium">Configuration</span>
-            </div>
-            <div className="w-8 h-px bg-gray-300"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">
-                3
-              </div>
-              <span className="ml-2">Interview</span>
-            </div>
-            <div className="w-8 h-px bg-gray-300"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">
-                4
-              </div>
-              <span className="ml-2">Summary</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

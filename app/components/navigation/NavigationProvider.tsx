@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { NavigationContextType, NavigationPage, InterviewStep } from './types';
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
@@ -14,6 +14,24 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   const [interviewStep, setInterviewStep] = useState<InterviewStep>('configuration');
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [resetToHomeCallback, setResetToHomeCallback] = useState<(() => void) | null>(null);
+
+  // Scroll to top when interview step changes
+  useEffect(() => {
+    if (interviewStarted) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [interviewStep, interviewStarted]);
+
+  // Scroll to top when current page changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [currentPage]);
 
   const resetNavigation = useCallback(() => {
     setCurrentPage('home');
