@@ -46,6 +46,17 @@ export function InterviewSummary({
     }
   };
 
+  const parseMarkdownText = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const boldText = part.slice(2, -2);
+        return <strong key={index} className="font-semibold">{boldText}</strong>;
+      }
+      return part;
+    });
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] gi-gradient-bg p-6">
       <div className="w-full max-w-xl gi-card-lg p-6">
@@ -76,7 +87,7 @@ export function InterviewSummary({
             <FileText className="w-5 h-5 text-gray-600" />
             <h3 className="gi-heading-3">Overall Assessment</h3>
           </div>
-          <p className="gi-body leading-relaxed">{summary}</p>
+          <p className="gi-body leading-relaxed">{parseMarkdownText(summary)}</p>
         </div>
 
         {/* Score and Verdict */}
@@ -118,7 +129,7 @@ export function InterviewSummary({
                   <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
                     <CheckCircle className="w-4 h-4 text-green-600" />
                   </div>
-                  <span className="gi-body leading-relaxed text-slate-700">{strength}</span>
+                  <span className="gi-body leading-relaxed text-slate-700">{parseMarkdownText(strength)}</span>
                 </li>
               ))}
             </ul>
@@ -148,7 +159,7 @@ export function InterviewSummary({
                   <div className="flex-shrink-0 w-6 h-6 bg-violet-100 rounded-full flex items-center justify-center mt-0.5">
                     <span className="text-violet-600 font-semibold text-sm">{index + 1}</span>
                   </div>
-                  <span className="gi-body leading-relaxed text-slate-700">{suggestion}</span>
+                  <span className="gi-body leading-relaxed text-slate-700">{parseMarkdownText(suggestion)}</span>
                 </li>
               ))}
             </ul>
