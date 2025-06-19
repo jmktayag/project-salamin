@@ -238,7 +238,8 @@ export class IntegratedSpeechService {
         await this.assemblyAIService.stopRecording();
       }
 
-      this.setStatus('idle');
+      // Don't set status to 'idle' here - let the individual services control status
+      // based on their transcription completion
       console.log('✅ Recording stopped');
 
     } catch (error) {

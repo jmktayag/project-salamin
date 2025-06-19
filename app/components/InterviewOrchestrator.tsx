@@ -869,23 +869,29 @@ export default function InterviewOrchestrator() {
                   voiceStatus === 'recording' 
                     ? 'border-red-500 bg-red-500 hover:bg-red-600 animate-pulse shadow-lg shadow-red-500/50 focus:ring-2 focus:ring-red-400' 
                     : voiceStatus === 'processing'
-                    ? 'border-yellow-300 bg-yellow-100 cursor-not-allowed opacity-75'
+                    ? 'border-blue-400 bg-blue-50 cursor-not-allowed animate-pulse shadow-lg shadow-blue-400/30'
                     : voiceStatus === 'error'
                     ? 'border-red-300 bg-red-50 hover:bg-red-100 focus:ring-2 focus:ring-red-400'
                     : 'border-gray-300 bg-white hover:bg-gray-50 hover:border-teal-600 focus:ring-2 focus:ring-teal-500'
                 } flex items-center justify-center`}
                 aria-label={
                   voiceStatus === 'recording' ? 'Stop recording' :
-                  voiceStatus === 'processing' ? 'Processing...' :
-                  voiceStatus === 'error' ? 'Speech recognition error - click to retry' :
+                  voiceStatus === 'processing' ? 'Transcribing your speech...' :
+                  voiceStatus === 'error' ? 'Speech recognition failed - click to try again' :
                   'Start voice input'
                 }
                 aria-pressed={voiceStatus === 'recording'}
+                title={
+                  voiceStatus === 'recording' ? 'Stop recording' :
+                  voiceStatus === 'processing' ? 'Transcribing your speech...' :
+                  voiceStatus === 'error' ? 'Speech recognition failed - click to try again' :
+                  'Start voice input'
+                }
               >
                 {voiceStatus === 'recording' ? (
                   <Mic className="w-4 h-4 text-white" />
                 ) : voiceStatus === 'processing' ? (
-                  <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                 ) : voiceStatus === 'error' ? (
                   <Mic className="w-4 h-4 text-red-600" />
                 ) : (
@@ -894,6 +900,27 @@ export default function InterviewOrchestrator() {
               </button>
             </div>
 
+            {/* Transcription Status Message */}
+            {voiceStatus === 'processing' && (
+              <div className="flex items-center gap-2 text-sm text-blue-600 mt-2">
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+
+            {/* Error Status Message */}
+            {voiceStatus === 'error' && (
+              <div className="flex items-center gap-2 text-sm text-red-600 mt-2">
+                <AlertCircle className="w-4 h-4" />
+                <span>Speech recognition failed. Click the microphone to try again.</span>
+              </div>
+            )}
+
+            {/* Speech Recognition Disclaimer */}
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-500">
+                💡 Tip: Speak clearly and pause between sentences for best results
+              </p>
+            </div>
           </div>
 
           {/* AI Feedback Section */}
