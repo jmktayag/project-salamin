@@ -26,6 +26,8 @@ import { InterviewFeedbackService } from '../utils/InterviewFeedbackService';
 import { QuestionGenerator } from '../utils/QuestionGenerator';
 import { InterviewSummary } from './InterviewSummary';
 import { InterviewAnalysisService, InterviewAnalysis } from '../utils/InterviewAnalysisService';
+import { IntegratedSpeechService, IntegratedSpeechCallbacks } from '../utils/IntegratedSpeechService';
+import { VoiceStatus, TranscriptionError } from '../types/speech';
 import InterviewConfiguration from './InterviewConfiguration';
 import { InterviewConfiguration as IInterviewConfiguration } from '../types/interview';
 
@@ -45,7 +47,7 @@ interface FeedbackItem {
 }
 
 /**
- * Web Speech API type definitions for TypeScript
+ * Web Speech API type definitions for TypeScript (fallback support)
  */
 interface SpeechRecognitionAlternative {
   transcript: string;
@@ -130,7 +132,8 @@ export default function InterviewOrchestrator() {
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [voiceStatus, setVoiceStatus] = useState<'ready' | 'recording' | 'processing'>('ready');
+  const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>('idle');
+  const [speechServiceInitialized, setSpeechServiceInitialized] = useState(false);
   const [analysis, setAnalysis] = useState<InterviewAnalysis | null>(null);
   const [allFeedback, setAllFeedback] = useState<Array<{ question: string; feedback: string }>>([]);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
@@ -142,6 +145,7 @@ export default function InterviewOrchestrator() {
   
   // Refs for managing speech recognition and audio playback
   const recognitionRef = useRef<SpeechRecognitionInterface | null>(null);
+  const speechServiceRef = useRef<IntegratedSpeechService | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsRef = useRef<TextToSpeechService | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -162,9 +166,61 @@ export default function InterviewOrchestrator() {
       feedbackGeneratorRef.current = new InterviewFeedbackService(apiKey);
       interviewAnalyzerRef.current = new InterviewAnalysisService(apiKey);
       questionGeneratorRef.current = new QuestionGenerator();
+      
+      // Initialize speech service with callbacks
+      initializeSpeechService();
+      
     } catch (error) {
       console.error('Failed to initialize AI services:', error);
     }
+  }, []);
+
+  // Initialize speech service with callbacks
+  const initializeSpeechService = useCallback(async () => {
+    try {
+      const callbacks: IntegratedSpeechCallbacks = {
+        onTranscriptUpdate: (transcript: string, isFinal: boolean) => {
+          if (isFinal) {
+            setResponse(prev => (prev ? prev + ' ' : '') + transcript);
+          }
+        },
+        onError: (error: TranscriptionError) => {
+          console.error('Speech recognition error:', error);
+          setVoiceStatus('error');
+        },
+        onStatusChange: (status: VoiceStatus) => {
+          setVoiceStatus(status);
+          setIsListening(status === 'recording');
+        },
+        onConnectionChange: (connectionStatus) => {
+          console.log('AssemblyAI connection status:', connectionStatus);
+        }
+      };
+
+      speechServiceRef.current = new IntegratedSpeechService(callbacks);
+      
+      // Initialize the service (this handles permissions and connection)
+      const initialized = await speechServiceRef.current.initialize();
+      setSpeechServiceInitialized(initialized);
+      
+      if (!initialized) {
+        console.warn('Failed to initialize speech service');
+        throw new Error('Speech service initialization failed');
+      }
+      
+    } catch (error) {
+      console.error('Failed to initialize speech service:', error);
+      setSpeechServiceInitialized(false);
+    }
+  }, []);
+
+  // Cleanup speech service on unmount
+  React.useEffect(() => {
+    return () => {
+      if (speechServiceRef.current) {
+        speechServiceRef.current.cleanup().catch(console.error);
+      }
+    };
   }, []);
 
   // Get current question from the interview questions array (memoized)
@@ -503,43 +559,72 @@ export default function InterviewOrchestrator() {
   /**
    * Starts speech recognition to capture user's voice input
    */
-  const startListening = useCallback(() => {
-    const SpeechRecognition =
-      (window as unknown as Record<string, unknown>).SpeechRecognition || (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('Speech recognition not supported in this browser.');
-      return;
-    }
-    const recognition = new (SpeechRecognition as new () => SpeechRecognitionInterface)();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      // Optimized transcript processing
-      let transcript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript + ' ';
+  const startListening = useCallback(async () => {
+    try {
+      // Use AssemblyAI WebSocket service
+      if (speechServiceInitialized && speechServiceRef.current) {
+        await speechServiceRef.current.startRecording();
+        return;
       }
-      transcript = transcript.trim();
-      setResponse(prev => (prev ? prev + ' ' : '') + transcript);
-    };
-    recognition.onend = () => {
-      setIsListening(false);
-      setVoiceStatus('ready');
-    };
-    recognitionRef.current = recognition;
-    recognition.start();
-    setIsListening(true);
-    setVoiceStatus('recording');
-  }, []);
+
+      // Fallback to Web Speech API if AssemblyAI not available
+      const SpeechRecognition =
+        (window as unknown as Record<string, unknown>).SpeechRecognition || 
+        (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        alert('Speech recognition not supported in this browser.');
+        return;
+      }
+
+      const recognition = new (SpeechRecognition as new () => SpeechRecognitionInterface)();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        // Optimized transcript processing
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript + ' ';
+        }
+        transcript = transcript.trim();
+        setResponse(prev => (prev ? prev + ' ' : '') + transcript);
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+        setVoiceStatus('idle');
+      };
+      recognitionRef.current = recognition;
+      recognition.start();
+      setIsListening(true);
+      setVoiceStatus('recording');
+      
+    } catch (error) {
+      console.error('Failed to start speech recognition:', error);
+      setVoiceStatus('error');
+    }
+  }, [speechServiceInitialized]);
 
   /**
    * Stops the active speech recognition session
    */
-  const stopListening = useCallback(() => {
-    recognitionRef.current?.stop();
-    setIsListening(false);
-    setVoiceStatus('ready');
-  }, []);
+  const stopListening = useCallback(async () => {
+    try {
+      // Use AssemblyAI WebSocket service
+      if (speechServiceInitialized && speechServiceRef.current) {
+        await speechServiceRef.current.stopRecording();
+        return;
+      }
+
+      // Fallback to Web Speech API
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      setVoiceStatus('idle');
+      
+    } catch (error) {
+      console.error('Failed to stop speech recognition:', error);
+      setVoiceStatus('error');
+    }
+  }, [speechServiceInitialized]);
 
   /**
    * Toggles speech recognition on/off
@@ -779,16 +864,30 @@ export default function InterviewOrchestrator() {
               <button
                 type="button"
                 onClick={toggleListening}
+                disabled={voiceStatus === 'processing'}
                 className={`absolute bottom-3 right-3 w-8 h-8 rounded-full border-2 transition-all duration-500 focus:outline-none ${
                   voiceStatus === 'recording' 
                     ? 'border-red-500 bg-red-500 hover:bg-red-600 animate-pulse shadow-lg shadow-red-500/50 focus:ring-2 focus:ring-red-400' 
+                    : voiceStatus === 'processing'
+                    ? 'border-yellow-300 bg-yellow-100 cursor-not-allowed opacity-75'
+                    : voiceStatus === 'error'
+                    ? 'border-red-300 bg-red-50 hover:bg-red-100 focus:ring-2 focus:ring-red-400'
                     : 'border-gray-300 bg-white hover:bg-gray-50 hover:border-teal-600 focus:ring-2 focus:ring-teal-500'
                 } flex items-center justify-center`}
-                aria-label={voiceStatus === 'recording' ? 'Stop recording' : 'Start voice input'}
+                aria-label={
+                  voiceStatus === 'recording' ? 'Stop recording' :
+                  voiceStatus === 'processing' ? 'Processing...' :
+                  voiceStatus === 'error' ? 'Speech recognition error - click to retry' :
+                  'Start voice input'
+                }
                 aria-pressed={voiceStatus === 'recording'}
               >
                 {voiceStatus === 'recording' ? (
                   <Mic className="w-4 h-4 text-white" />
+                ) : voiceStatus === 'processing' ? (
+                  <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin" />
+                ) : voiceStatus === 'error' ? (
+                  <Mic className="w-4 h-4 text-red-600" />
                 ) : (
                   <Mic className="w-4 h-4 text-gray-600" />
                 )}

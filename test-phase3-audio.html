@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 3 Audio Testing - AssemblyAI Integration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background-color: #f9fafb;
+        }
+        .test-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        .status.success { background-color: #d1fae5; color: #065f46; }
+        .status.error { background-color: #fee2e2; color: #991b1b; }
+        .status.warning { background-color: #fef3c7; color: #92400e; }
+        .status.info { background-color: #dbeafe; color: #1e40af; }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        button:hover { background-color: #1d4ed8; }
+        button:disabled { 
+            background-color: #9ca3af; 
+            cursor: not-allowed; 
+        }
+        .transcript-box {
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 100px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .info-item {
+            background-color: #f8fafc;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Phase 3: Audio Recording & AssemblyAI Integration Test</h1>
+        
+        <div class="test-section">
+            <div class="test-title">📋 Browser Compatibility Check</div>
+            <div id="browserCapabilities">Checking browser capabilities...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🔑 Environment Configuration</div>
+            <div id="environmentCheck">Checking environment configuration...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🎤 Microphone Permission Test</div>
+            <div id="microphoneStatus">Ready to test microphone permissions</div>
+            <button id="testMicrophoneBtn" onclick="testMicrophonePermission()">Test Microphone Permission</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🔌 AssemblyAI Connection Test</div>
+            <div id="connectionStatus">Ready to test AssemblyAI connection</div>
+            <button id="testConnectionBtn" onclick="testAssemblyAIConnection()">Test AssemblyAI Connection</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🎙️ Full Integration Test</div>
+            <div id="integrationStatus">Ready for full integration test</div>
+            <div class="controls">
+                <button id="initializeBtn" onclick="initializeService()">Initialize Service</button>
+                <button id="startRecordingBtn" onclick="startRecording()" disabled>Start Recording</button>
+                <button id="stopRecordingBtn" onclick="stopRecording()" disabled>Stop Recording</button>
+                <button id="cleanupBtn" onclick="cleanupService()" disabled>Cleanup</button>
+            </div>
+            
+            <div class="info-grid" id="serviceInfo">
+                <!-- Service info will be populated here -->
+            </div>
+            
+            <div class="test-title">📝 Live Transcription</div>
+            <div class="transcript-box" id="transcriptBox">Transcripts will appear here...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">📊 Test Results Summary</div>
+            <div id="testSummary">Run tests to see results</div>
+        </div>
+    </div>
+
+    <script>
+        // This will be populated with the actual API key from environment
+        const ASSEMBLY_AI_KEY = 'PLACEHOLDER_FOR_ACTUAL_KEY';
+        
+        let testResults = {
+            browserSupport: false,
+            environment: false,
+            microphone: false,
+            assemblyAI: false,
+            integration: false
+        };
+
+        // Mock classes for testing (in real implementation, these would be imported)
+        class MockAudioProcessor {
+            async requestMicrophonePermission() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(track => track.stop());
+                    return true;
+                } catch (error) {
+                    console.error('Microphone permission denied:', error);
+                    return false;
+                }
+            }
+
+            static async getBrowserCapabilities() {
+                const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+                const hasAudioContext = !!(window.AudioContext || window.webkitAudioContext);
+                
+                return {
+                    hasGetUserMedia,
+                    hasAudioContext,
+                    hasAudioWorklet: hasAudioContext ? !!(new (window.AudioContext || window.webkitAudioContext)()).audioWorklet : false,
+                    supportedConstraints: hasGetUserMedia ? navigator.mediaDevices.getSupportedConstraints() : null
+                };
+            }
+        }
+
+        // Test functions
+        async function checkBrowserCapabilities() {
+            const capabilities = await MockAudioProcessor.getBrowserCapabilities();
+            const capabilitiesDiv = document.getElementById('browserCapabilities');
+            
+            let html = '<div class="info-grid">';
+            
+            // Check getUserMedia
+            html += `<div class="info-item">
+                <strong>getUserMedia:</strong> ${capabilities.hasGetUserMedia ? '✅ Supported' : '❌ Not Supported'}
+            </div>`;
+            
+            // Check Web Audio API
+            html += `<div class="info-item">
+                <strong>Web Audio API:</strong> ${capabilities.hasAudioContext ? '✅ Supported' : '❌ Not Supported'}
+            </div>`;
+            
+            // Check AudioWorklet
+            html += `<div class="info-item">
+                <strong>AudioWorklet:</strong> ${capabilities.hasAudioWorklet ? '✅ Supported' : '⚠️ Not Supported (will use fallback)'}
+            </div>`;
+            
+            // Check HTTPS
+            const isHTTPS = location.protocol === 'https:';
+            html += `<div class="info-item">
+                <strong>HTTPS:</strong> ${isHTTPS ? '✅ Secure' : '⚠️ Not Secure (required for microphone)'}
+            </div>`;
+            
+            html += '</div>';
+            
+            const allSupported = capabilities.hasGetUserMedia && capabilities.hasAudioContext && isHTTPS;
+            
+            if (allSupported) {
+                html += '<div class="status success">✅ Browser fully supports audio recording</div>';
+                testResults.browserSupport = true;
+            } else {
+                html += '<div class="status error">❌ Browser missing required features</div>';
+            }
+            
+            capabilitiesDiv.innerHTML = html;
+            updateTestSummary();
+        }
+
+        function checkEnvironment() {
+            const envDiv = document.getElementById('environmentCheck');
+            
+            // In a real implementation, this would check for the actual API key
+            const hasApiKey = ASSEMBLY_AI_KEY && ASSEMBLY_AI_KEY !== 'PLACEHOLDER_FOR_ACTUAL_KEY';
+            
+            if (hasApiKey) {
+                envDiv.innerHTML = '<div class="status success">✅ AssemblyAI API key configured</div>';
+                testResults.environment = true;
+            } else {
+                envDiv.innerHTML = `
+                    <div class="status warning">⚠️ AssemblyAI API key not configured</div>
+                    <p><small>Note: This test page needs to be served from the Next.js application to access environment variables.</small></p>
+                `;
+            }
+            
+            updateTestSummary();
+        }
+
+        async function testMicrophonePermission() {
+            const statusDiv = document.getElementById('microphoneStatus');
+            const btn = document.getElementById('testMicrophoneBtn');
+            
+            btn.disabled = true;
+            statusDiv.innerHTML = '<div class="status info">🔄 Testing microphone permission...</div>';
+            
+            try {
+                const audioProcessor = new MockAudioProcessor();
+                const hasPermission = await audioProcessor.requestMicrophonePermission();
+                
+                if (hasPermission) {
+                    statusDiv.innerHTML = '<div class="status success">✅ Microphone permission granted</div>';
+                    testResults.microphone = true;
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">❌ Microphone permission denied</div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Microphone test failed: ${error.message}</div>`;
+            }
+            
+            btn.disabled = false;
+            updateTestSummary();
+        }
+
+        async function testAssemblyAIConnection() {
+            const statusDiv = document.getElementById('connectionStatus');
+            const btn = document.getElementById('testConnectionBtn');
+            
+            btn.disabled = true;
+            statusDiv.innerHTML = '<div class="status info">🔄 Testing AssemblyAI connection...</div>';
+            
+            try {
+                // This would normally use the actual AssemblyAI service
+                statusDiv.innerHTML = `
+                    <div class="status warning">⚠️ AssemblyAI connection test requires server environment</div>
+                    <p><small>This test requires the actual service running in the Next.js application context.</small></p>
+                `;
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ AssemblyAI connection failed: ${error.message}</div>`;
+            }
+            
+            btn.disabled = false;
+            updateTestSummary();
+        }
+
+        function updateServiceInfo(info) {
+            const serviceInfoDiv = document.getElementById('serviceInfo');
+            serviceInfoDiv.innerHTML = `
+                <div class="info-item">
+                    <strong>Initialized:</strong> ${info.isInitialized ? '✅ Yes' : '❌ No'}
+                </div>
+                <div class="info-item">
+                    <strong>AssemblyAI:</strong> ${info.assemblyAIConnected ? '✅ Connected' : '❌ Disconnected'}
+                </div>
+                <div class="info-item">
+                    <strong>Connection:</strong> ${info.connectionStatus}
+                </div>
+                <div class="info-item">
+                    <strong>Voice Status:</strong> ${info.voiceStatus}
+                </div>
+            `;
+        }
+
+        function updateTestSummary() {
+            const summaryDiv = document.getElementById('testSummary');
+            const total = Object.keys(testResults).length;
+            const passed = Object.values(testResults).filter(Boolean).length;
+            
+            let html = `<div class="info-grid">`;
+            
+            Object.entries(testResults).forEach(([test, passed]) => {
+                html += `<div class="info-item">
+                    <strong>${test.charAt(0).toUpperCase() + test.slice(1)}:</strong> 
+                    ${passed ? '✅ Passed' : '❌ Not Completed'}
+                </div>`;
+            });
+            
+            html += `</div>`;
+            html += `<div class="status ${passed === total ? 'success' : 'info'}">
+                Overall: ${passed}/${total} tests passed
+            </div>`;
+            
+            summaryDiv.innerHTML = html;
+        }
+
+        // Integration test functions (placeholders)
+        async function initializeService() {
+            const statusDiv = document.getElementById('integrationStatus');
+            statusDiv.innerHTML = '<div class="status warning">⚠️ Integration test requires Next.js application context</div>';
+        }
+
+        async function startRecording() {
+            // Placeholder
+        }
+
+        async function stopRecording() {
+            // Placeholder
+        }
+
+        async function cleanupService() {
+            // Placeholder
+        }
+
+        // Initialize tests when page loads
+        window.addEventListener('load', async () => {
+            await checkBrowserCapabilities();
+            checkEnvironment();
+        });
+    </script>
+</body>
+</html>
