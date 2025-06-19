@@ -849,12 +849,6 @@ export default function InterviewOrchestrator() {
                     Next Question
                   </button>
                 )}
-                <button
-                  onClick={handleSaveFeedback}
-                  className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-400 focus:outline-none transition-colors"
-                >
-                  Save Feedback
-                </button>
               </>
             )}
           </div>

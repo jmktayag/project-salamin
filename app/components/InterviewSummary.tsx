@@ -8,7 +8,8 @@ import {
   Target,
   ArrowRight,
   FileText,
-  BookOpen
+  BookOpen,
+  MessageSquare
 } from 'lucide-react';
 import type { InterviewAnalysis } from '../utils/InterviewAnalysisService';
 import type { InterviewConfiguration } from '../types/interview';
@@ -169,13 +170,18 @@ export function InterviewSummary({
             Start New Interview
             <ArrowRight className="w-4 h-4" />
           </button>
-          <button
-            onClick={onReviewFeedback}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-400 focus:outline-none transition-colors"
+          
+          {/* Survey Feedback Button */}
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSdVk0uOAyB05OmLt4DZR4Hq0Ztfv1kktm0jq6dLB9qu1jpLAA/viewform?usp=header"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors font-medium shadow-lg"
+            style={{ minHeight: '48px' }}
           >
-            Review All Feedback
-            <FileText className="w-4 h-4" />
-          </button>
+            Share Your Feedback
+            <MessageSquare className="w-4 h-4" />
+          </a>
         </div>
       </div>
     </div>
