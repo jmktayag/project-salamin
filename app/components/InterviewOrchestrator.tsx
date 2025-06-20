@@ -74,6 +74,8 @@ interface SpeechRecognitionInterface extends EventTarget {
   interimResults: boolean;
   onresult: (event: SpeechRecognitionEvent) => void;
   onend: () => void;
+  onerror: (event: any) => void;
+  onstart: () => void;
   start: () => void;
   stop: () => void;
 }
@@ -153,29 +155,7 @@ export default function InterviewOrchestrator() {
   const interviewAnalyzerRef = useRef<InterviewAnalysisService | null>(null);
   const questionGeneratorRef = useRef<QuestionGenerator | null>(null);
 
-  // Initialize AI services with API key
-  React.useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('Gemini API key not found in environment variables');
-      return;
-    }
-    
-    try {
-      ttsRef.current = new TextToSpeechService(apiKey);
-      feedbackGeneratorRef.current = new InterviewFeedbackService(apiKey);
-      interviewAnalyzerRef.current = new InterviewAnalysisService(apiKey);
-      questionGeneratorRef.current = new QuestionGenerator();
-      
-      // Initialize speech service with callbacks
-      initializeSpeechService();
-      
-    } catch (error) {
-      console.error('Failed to initialize AI services:', error);
-    }
-  }, []);
-
-  // Initialize speech service with callbacks
+  // Initialize speech service with callbacks (without requesting permissions)
   const initializeSpeechService = useCallback(async () => {
     try {
       const callbacks: IntegratedSpeechCallbacks = {
@@ -199,20 +179,36 @@ export default function InterviewOrchestrator() {
 
       speechServiceRef.current = new IntegratedSpeechService(callbacks);
       
-      // Initialize the service (this handles permissions and connection)
-      const initialized = await speechServiceRef.current.initialize();
-      setSpeechServiceInitialized(initialized);
-      
-      if (!initialized) {
-        console.warn('Failed to initialize speech service');
-        throw new Error('Speech service initialization failed');
-      }
+      // Don't initialize automatically - wait for user to click record button
+      setSpeechServiceInitialized(false);
       
     } catch (error) {
-      console.error('Failed to initialize speech service:', error);
+      console.error('Failed to setup speech service:', error);
       setSpeechServiceInitialized(false);
     }
   }, []);
+
+  // Initialize AI services with API key
+  React.useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('Gemini API key not found in environment variables');
+      return;
+    }
+    
+    try {
+      ttsRef.current = new TextToSpeechService(apiKey);
+      feedbackGeneratorRef.current = new InterviewFeedbackService(apiKey);
+      interviewAnalyzerRef.current = new InterviewAnalysisService(apiKey);
+      questionGeneratorRef.current = new QuestionGenerator();
+      
+      // Initialize speech service with callbacks
+      initializeSpeechService();
+      
+    } catch (error) {
+      console.error('Failed to initialize AI services:', error);
+    }
+  }, [initializeSpeechService]);
 
   // Cleanup speech service on unmount
   React.useEffect(() => {
@@ -561,25 +557,48 @@ export default function InterviewOrchestrator() {
    */
   const startListening = useCallback(async () => {
     try {
-      // Use AssemblyAI WebSocket service
+      // Initialize speech service if not already done (request permissions here)
+      if (!speechServiceInitialized && speechServiceRef.current) {
+        setVoiceStatus('processing');
+        const initialized = await speechServiceRef.current.initialize();
+        setSpeechServiceInitialized(initialized);
+        
+        if (!initialized) {
+          console.warn('Failed to initialize speech service, trying fallback');
+          // Don't return here, let it fall through to Web Speech API fallback
+        }
+      }
+
+      // Use AssemblyAI WebSocket service if available and initialized
       if (speechServiceInitialized && speechServiceRef.current) {
         await speechServiceRef.current.startRecording();
         return;
       }
 
-      // Fallback to Web Speech API if AssemblyAI not available
+      // Fallback to Web Speech API for mobile/unsupported browsers
       const SpeechRecognition =
         (window as unknown as Record<string, unknown>).SpeechRecognition || 
         (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
       
       if (!SpeechRecognition) {
-        alert('Speech recognition not supported in this browser.');
+        setVoiceStatus('error');
+        // More specific error message for different platforms
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const errorMessage = isMobile 
+          ? 'Speech recognition is not supported on this mobile browser. Please try Chrome or Safari, or type your response.'
+          : 'Speech recognition is not supported in this browser. Please try Chrome, Edge, or Safari, or type your response.';
+        alert(errorMessage);
         return;
       }
 
+      // Create recognition instance with mobile-friendly settings
       const recognition = new (SpeechRecognition as new () => SpeechRecognitionInterface)();
       recognition.lang = 'en-US';
       recognition.interimResults = false;
+      // Add mobile-friendly settings
+      (recognition as any).maxAlternatives = 1;
+      (recognition as any).continuous = false;
+      
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         // Optimized transcript processing
         let transcript = '';
@@ -589,14 +608,46 @@ export default function InterviewOrchestrator() {
         transcript = transcript.trim();
         setResponse(prev => (prev ? prev + ' ' : '') + transcript);
       };
+      
       recognition.onend = () => {
         setIsListening(false);
         setVoiceStatus('idle');
       };
+      
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        
+        // Handle specific errors more gracefully
+        if (event.error === 'not-allowed') {
+          setVoiceStatus('error');
+          alert('Microphone permission denied. Please allow microphone access and try again.');
+        } else if (event.error === 'no-speech') {
+          setVoiceStatus('idle');
+          // Don't show error for no-speech, just reset
+        } else if (event.error === 'network') {
+          setVoiceStatus('error');
+          alert('Network error occurred. Please check your connection and try again.');
+        } else {
+          setVoiceStatus('error');
+        }
+      };
+      
+      recognition.onstart = () => {
+        console.log('Speech recognition started');
+        setIsListening(true);
+        setVoiceStatus('recording');
+      };
+      
       recognitionRef.current = recognition;
-      recognition.start();
-      setIsListening(true);
-      setVoiceStatus('recording');
+      
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error('Failed to start speech recognition:', error);
+        setVoiceStatus('error');
+        alert('Failed to start speech recognition. Please try again or type your response.');
+      }
       
     } catch (error) {
       console.error('Failed to start speech recognition:', error);
@@ -900,12 +951,6 @@ export default function InterviewOrchestrator() {
               </button>
             </div>
 
-            {/* Transcription Status Message */}
-            {voiceStatus === 'processing' && (
-              <div className="flex items-center gap-2 text-sm text-blue-600 mt-2">
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
 
             {/* Error Status Message */}
             {voiceStatus === 'error' && (
