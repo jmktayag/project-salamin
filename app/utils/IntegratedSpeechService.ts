@@ -102,6 +102,7 @@ export class IntegratedSpeechService {
 
   /**
    * Initialize the speech service (request permissions and connect)
+   * Only requests permissions when called, not during construction
    */
   public async initialize(): Promise<boolean> {
     if (this.isInitialized) {
@@ -126,10 +127,12 @@ export class IntegratedSpeechService {
         }
       }
 
-      // Fallback to client-side
+      // Fallback to client-side (only for desktop browsers with good support)
       if (!this.useServerSide && this.assemblyAIService && this.audioProcessor) {
-        // Check browser capabilities
+        // Check browser capabilities first
         const capabilities = await AudioProcessor.getBrowserCapabilities();
+        
+        // More restrictive checks for mobile compatibility
         if (!capabilities.hasGetUserMedia) {
           throw new Error('Browser does not support microphone access');
         }
@@ -137,7 +140,14 @@ export class IntegratedSpeechService {
           throw new Error('Browser does not support Web Audio API');
         }
 
-        // Request microphone permission
+        // Check if we're on mobile (basic detection)
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+          console.log('Mobile device detected, skipping AssemblyAI initialization');
+          throw new Error('Mobile devices should use Web Speech API fallback');
+        }
+
+        // Request microphone permission only when user clicks record
         const hasPermission = await this.audioProcessor.requestMicrophonePermission();
         if (!hasPermission) {
           throw new Error('Microphone permission denied');
@@ -157,12 +167,13 @@ export class IntegratedSpeechService {
       throw new Error('No speech service available');
 
     } catch (error) {
-      this.setStatus('error');
+      this.setStatus('idle'); // Set to idle instead of error to allow fallback
       const transcriptionError: TranscriptionError = {
         type: 'initialization',
-        message: `Failed to initialize speech service: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `Speech service unavailable: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
-      this.callbacks.onError(transcriptionError);
+      console.log('Speech service initialization failed, will use Web Speech API fallback:', transcriptionError.message);
+      // Don't call onError callback here as we want to allow fallback to Web Speech API
       return false;
     }
   }
