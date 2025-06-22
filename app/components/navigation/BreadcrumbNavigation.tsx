@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useNavigation } from './NavigationProvider';
-import { BreadcrumbItem, InterviewStep } from './types';
+import { BreadcrumbItem } from './types';
 
 export default function BreadcrumbNavigation() {
-  const { interviewStep, setInterviewStep, interviewStarted } = useNavigation();
+  const { interviewStep, interviewStarted } = useNavigation();
 
   const steps: BreadcrumbItem[] = useMemo(() => [
     {
@@ -14,14 +14,14 @@ export default function BreadcrumbNavigation() {
       step: 'configuration',
       isActive: interviewStep === 'configuration',
       isCompleted: interviewStep === 'interview' || interviewStep === 'summary',
-      isClickable: interviewStep === 'interview' || interviewStep === 'summary',
+      isClickable: false,
     },
     {
       label: 'Interview',
       step: 'interview',
       isActive: interviewStep === 'interview',
       isCompleted: interviewStep === 'summary',
-      isClickable: interviewStep === 'summary',
+      isClickable: false,
     },
     {
       label: 'Summary',
@@ -33,40 +33,6 @@ export default function BreadcrumbNavigation() {
   ], [interviewStep]);
 
 
-  const handleStepClick = (step: InterviewStep, isClickable: boolean) => {
-    if (isClickable) {
-      setInterviewStep(step);
-    }
-  };
-
-  const handleKeyNavigation = useCallback((event: KeyboardEvent) => {
-    if (!interviewStarted) return;
-    
-    const currentIndex = steps.findIndex(s => s.isActive);
-    let targetIndex = currentIndex;
-    
-    switch (event.key) {
-      case 'ArrowLeft':
-        targetIndex = Math.max(0, currentIndex - 1);
-        break;
-      case 'ArrowRight':
-        targetIndex = Math.min(steps.length - 1, currentIndex + 1);
-        break;
-      default:
-        return;
-    }
-    
-    const targetStep = steps[targetIndex];
-    if (targetStep && targetStep.isClickable) {
-      event.preventDefault();
-      setInterviewStep(targetStep.step);
-    }
-  }, [interviewStarted, steps, setInterviewStep]);
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyNavigation);
-    return () => document.removeEventListener('keydown', handleKeyNavigation);
-  }, [handleKeyNavigation]);
 
   if (!interviewStarted) {
     return null;
@@ -103,48 +69,27 @@ export default function BreadcrumbNavigation() {
                   </div>
                   
                   {/* Step Label */}
-                  {step.isClickable ? (
-                    <button
-                      onClick={() => handleStepClick(step.step, step.isClickable)}
-                      className={`text-sm font-medium transition-colors duration-200 hover:underline touch-manipulation ${
-                        step.isActive
-                          ? 'text-teal-600 font-semibold'
-                          : step.isCompleted
-                          ? 'text-teal-600 hover:text-teal-700'
-                          : 'text-gray-600 hover:text-teal-600'
-                      }`}
-                      aria-current={step.isActive ? 'step' : undefined}
-                      aria-label={`${step.label} step ${index + 1} of ${steps.length}. ${
-                        step.isCompleted 
-                          ? 'Completed and clickable to return' 
-                          : step.isActive 
-                          ? 'Currently active' 
-                          : step.isClickable 
-                          ? 'Available to navigate to'
-                          : 'Not yet available'
-                      }`}
-                      aria-describedby={step.isActive ? `step-${step.step}-desc` : undefined}
-                    >
-                      <span className="hidden sm:inline">{step.label}</span>
-                      <span className="sm:hidden">{step.label.slice(0, 4)}</span>
-                    </button>
-                  ) : (
-                    <span
-                      className={`text-sm font-medium ${
-                        step.isActive
-                          ? 'text-teal-600 font-semibold'
-                          : 'text-gray-400'
-                      }`}
-                      aria-current={step.isActive ? 'step' : undefined}
-                      aria-label={`${step.label} step ${index + 1} of ${steps.length}. ${
-                        step.isActive ? 'Currently active' : 'Not yet available'
-                      }`}
-                      aria-describedby={step.isActive ? `step-${step.step}-desc` : undefined}
-                    >
-                      <span className="hidden sm:inline">{step.label}</span>
-                      <span className="sm:hidden">{step.label.slice(0, 4)}</span>
-                    </span>
-                  )}
+                  <span
+                    className={`text-sm font-medium ${
+                      step.isActive
+                        ? 'text-teal-600 font-semibold'
+                        : step.isCompleted
+                        ? 'text-teal-600'
+                        : 'text-gray-400'
+                    }`}
+                    aria-current={step.isActive ? 'step' : undefined}
+                    aria-label={`${step.label} step ${index + 1} of ${steps.length}. ${
+                      step.isCompleted 
+                        ? 'Completed' 
+                        : step.isActive 
+                        ? 'Currently active' 
+                        : 'Not yet available'
+                    }`}
+                    aria-describedby={step.isActive ? `step-${step.step}-desc` : undefined}
+                  >
+                    <span className="hidden sm:inline">{step.label}</span>
+                    <span className="sm:hidden">{step.label.slice(0, 4)}</span>
+                  </span>
                 </div>
                 
                 {index < steps.length - 1 && (
@@ -179,7 +124,6 @@ export default function BreadcrumbNavigation() {
                 {step.step === 'configuration' && 'Configure your interview settings before starting.'}
                 {step.step === 'interview' && 'Answer interview questions and receive AI feedback.'}
                 {step.step === 'summary' && 'Review your interview performance and get detailed analysis.'}
-                Use arrow keys to navigate between available steps.
               </div>
             )
           ))}
