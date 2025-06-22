@@ -139,6 +139,7 @@ export default function InterviewOrchestrator() {
   const [analysis, setAnalysis] = useState<InterviewAnalysis | null>(null);
   const [allFeedback, setAllFeedback] = useState<Array<{ question: string; feedback: string }>>([]);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
+  const [showTips, setShowTips] = useState(false);
   
   // AI Question Generation State
   const [interviewQuestions, setInterviewQuestions] = useState<InterviewQuestion[]>([]);
@@ -386,6 +387,7 @@ export default function InterviewOrchestrator() {
     setAllFeedback([]);
     setAnsweredQuestionIds(new Set());
     setAnalysis(null);
+    setShowTips(false);
     
     // Update navigation state
     setCurrentPage('interview');
@@ -505,6 +507,7 @@ export default function InterviewOrchestrator() {
     setInterviewQuestions([]);
     setQuestionGenerationError(null);
     setInterviewConfig(null);
+    setShowTips(false);
     
     // Reset navigation state
     setCurrentPage('home');
@@ -528,6 +531,7 @@ export default function InterviewOrchestrator() {
       setCurrentQuestionIndex(nextQuestionIndex);
       setResponse('');
       setHasAnswerSubmitted(false);
+      setShowTips(false); // Reset tips visibility for new question
       
       // Debug log for question progression
       console.log(`Progressed to question ${nextQuestionIndex + 1} of ${interviewQuestions.length}`);
@@ -862,9 +866,6 @@ export default function InterviewOrchestrator() {
               <h3 className="gi-heading-3">
                 {currentQuestion?.question || 'Loading question...'}
               </h3>
-              <p className="text-sm gi-text-muted">
-                Example: &quot;I&apos;m a senior iOS developer with 8+ years of experience building scalable apps.&quot;
-              </p>
               
               {/* Audio Controls */}
               <div className="flex justify-end">
@@ -887,6 +888,44 @@ export default function InterviewOrchestrator() {
               </div>
             </div>
           </div>
+
+          {/* Tips Section */}
+          {currentQuestion?.tips && currentQuestion.tips.length > 0 && (
+            <div className="mt-4 border border-gray-200 rounded-lg bg-white">
+              <button
+                type="button"
+                onClick={() => setShowTips(!showTips)}
+                className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors duration-200"
+                aria-expanded={showTips}
+                aria-controls="tips-content"
+              >
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Need a hint?
+                  </span>
+                </div>
+                <div className={`transform transition-transform duration-200 ${showTips ? 'rotate-180' : ''}`}>
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+              
+              {showTips && (
+                <div id="tips-content" className="px-3 pb-3 border-t border-gray-100">
+                  <ul className="space-y-2 mt-3">
+                    {currentQuestion.tips.map((tip, index) => (
+                      <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                        <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400 mt-2"></span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Response Section */}
           <div className="mt-6 space-y-4">
