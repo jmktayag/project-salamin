@@ -30,6 +30,9 @@ import { IntegratedSpeechService, IntegratedSpeechCallbacks } from '../utils/Int
 import { VoiceStatus, TranscriptionError } from '../types/speech';
 import InterviewConfiguration from './InterviewConfiguration';
 import { InterviewConfiguration as IInterviewConfiguration } from '../types/interview';
+import { useFloatingHint } from '../hooks/useFloatingHint';
+import { HintButton } from './HintButton';
+import { FloatingHintPanel } from './FloatingHintPanel';
 
 /**
  * Types of feedback that can be displayed to the user
@@ -144,6 +147,13 @@ export default function InterviewOrchestrator() {
   const [interviewQuestions, setInterviewQuestions] = useState<InterviewQuestion[]>([]);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [questionGenerationError, setQuestionGenerationError] = useState<string | null>(null);
+  
+  // Floating hint system
+  const floatingHint = useFloatingHint({
+    closeOnEscape: true,
+    closeOnClickOutside: true,
+    animationDuration: 300,
+  });
   
   // Refs for managing speech recognition and audio playback
   const recognitionRef = useRef<SpeechRecognitionInterface | null>(null);
@@ -386,6 +396,7 @@ export default function InterviewOrchestrator() {
     setAllFeedback([]);
     setAnsweredQuestionIds(new Set());
     setAnalysis(null);
+    floatingHint.actions.reset();
     
     // Update navigation state
     setCurrentPage('interview');
@@ -505,6 +516,7 @@ export default function InterviewOrchestrator() {
     setInterviewQuestions([]);
     setQuestionGenerationError(null);
     setInterviewConfig(null);
+    floatingHint.actions.reset();
     
     // Reset navigation state
     setCurrentPage('home');
@@ -528,6 +540,7 @@ export default function InterviewOrchestrator() {
       setCurrentQuestionIndex(nextQuestionIndex);
       setResponse('');
       setHasAnswerSubmitted(false);
+      floatingHint.actions.close(); // Close hints panel for new question
       
       // Debug log for question progression
       console.log(`Progressed to question ${nextQuestionIndex + 1} of ${interviewQuestions.length}`);
@@ -862,9 +875,6 @@ export default function InterviewOrchestrator() {
               <h3 className="gi-heading-3">
                 {currentQuestion?.question || 'Loading question...'}
               </h3>
-              <p className="text-sm gi-text-muted">
-                Example: &quot;I&apos;m a senior iOS developer with 8+ years of experience building scalable apps.&quot;
-              </p>
               
               {/* Audio Controls */}
               <div className="flex justify-end">
@@ -887,6 +897,7 @@ export default function InterviewOrchestrator() {
               </div>
             </div>
           </div>
+
 
           {/* Response Section */}
           <div className="mt-6 space-y-4">
@@ -1027,6 +1038,26 @@ export default function InterviewOrchestrator() {
           {/* Hidden audio element */}
           <audio ref={audioRef} className="hidden" />
         </div>
+
+        {/* Floating Hint System */}
+        {currentQuestion?.tips && currentQuestion.tips.length > 0 && (
+          <>
+            <HintButton
+              onClick={floatingHint.actions.toggle}
+              isOpen={floatingHint.state.isOpen}
+              buttonRef={floatingHint.buttonRef}
+            />
+            <FloatingHintPanel
+              isOpen={floatingHint.state.isOpen}
+              isVisible={floatingHint.state.isVisible}
+              isAnimating={floatingHint.state.isAnimating}
+              deviceType={floatingHint.deviceType}
+              tips={currentQuestion.tips}
+              onClose={floatingHint.actions.close}
+              panelRef={floatingHint.panelRef}
+            />
+          </>
+        )}
       </div>
     </div>
   );
