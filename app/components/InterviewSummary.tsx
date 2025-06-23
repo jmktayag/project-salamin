@@ -190,7 +190,7 @@ export function InterviewSummary({
             className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors font-medium shadow-lg"
             style={{ minHeight: '48px' }}
           >
-            Share Your Feedback
+Fill Up Survey
             <MessageSquare className="w-4 h-4" />
           </a>
         </div>
