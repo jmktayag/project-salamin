@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { NavigationProvider } from './components/navigation/NavigationProvider'
+import { FirebaseProvider } from './components/FirebaseProvider'
 import TopNavigation from './components/navigation/TopNavigation'
 import BreadcrumbNavigation from './components/navigation/BreadcrumbNavigation'
 
@@ -20,15 +21,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <NavigationProvider>
-          <div className="min-h-screen">
-            <TopNavigation />
-            <BreadcrumbNavigation />
-            <main className="flex-1">
-              {children}
-            </main>
-          </div>
-        </NavigationProvider>
+        <FirebaseProvider>
+          <NavigationProvider>
+            <div className="min-h-screen">
+              <TopNavigation />
+              <BreadcrumbNavigation />
+              <main className="flex-1">
+                {children}
+              </main>
+            </div>
+          </NavigationProvider>
+        </FirebaseProvider>
       </body>
     </html>
   )

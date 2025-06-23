@@ -33,6 +33,13 @@ import { InterviewConfiguration as IInterviewConfiguration } from '../types/inte
 import { useFloatingHint } from '../hooks/useFloatingHint';
 import { HintButton } from './HintButton';
 import { FloatingHintPanel } from './FloatingHintPanel';
+import { 
+  trackSessionStarted, 
+  trackQuestionAnswered, 
+  trackSessionCompleted, 
+  trackFeatureUsed, 
+  trackSessionAbandoned 
+} from '../lib/firebase/analytics';
 
 /**
  * Types of feedback that can be displayed to the user
@@ -142,6 +149,7 @@ export default function InterviewOrchestrator() {
   const [analysis, setAnalysis] = useState<InterviewAnalysis | null>(null);
   const [allFeedback, setAllFeedback] = useState<Array<{ question: string; feedback: string }>>([]);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   
   // AI Question Generation State
   const [interviewQuestions, setInterviewQuestions] = useState<InterviewQuestion[]>([]);
@@ -300,6 +308,13 @@ export default function InterviewOrchestrator() {
 
     try {
       setIsSpeaking(true);
+      
+      // Track TTS feature usage
+      trackFeatureUsed({
+        feature_type: 'tts',
+        feature_context: 'question_readout'
+      });
+      
       const audioBuffer = await ttsRef.current.generateSpeech(text);
       const audioBlob = new Blob([audioBuffer], { type: 'audio/wav' });
       const audioUrl = URL.createObjectURL(audioBlob);
@@ -378,10 +393,20 @@ export default function InterviewOrchestrator() {
    * Goes back to landing page from configuration
    */
   const handleBackToLanding = useCallback(() => {
+    // Track session abandonment if interview was started
+    if (isInterviewStarted && sessionStartTime) {
+      const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+      trackSessionAbandoned({
+        questions_completed: allFeedback.length,
+        abandonment_point: 'interview',
+        duration_seconds: durationSeconds
+      });
+    }
+    
     setShowConfiguration(false);
     setCurrentPage('home');
     setInterviewStarted(false);
-  }, [setCurrentPage, setInterviewStarted]);
+  }, [setCurrentPage, setInterviewStarted, isInterviewStarted, sessionStartTime, allFeedback.length]);
 
   /**
    * Starts a new interview session with configuration
@@ -417,6 +442,14 @@ export default function InterviewOrchestrator() {
       await generateInterviewQuestions(config);
       // Start interview after questions are generated/loaded
       setIsInterviewStarted(true);
+      
+      // Track session started
+      const startTime = Date.now();
+      setSessionStartTime(startTime);
+      trackSessionStarted({
+        job_position: config.position,
+        interview_type: config.interviewType
+      });
     } catch (error) {
       console.error('Failed to start interview:', error);
       // Don't start interview if question generation fails completely
@@ -462,6 +495,13 @@ export default function InterviewOrchestrator() {
           newSet.add(currentQuestion.id);
           return newSet;
         });
+        
+        // Track question answered
+        trackQuestionAnswered({
+          question_index: currentQuestionIndex,
+          question_category: currentQuestion.category,
+          response_length: response.trim().length
+        });
       } else {
         console.error('Feedback generator not initialized');
         setFeedback(SAMPLE_FEEDBACK);
@@ -492,6 +532,17 @@ export default function InterviewOrchestrator() {
       setAnalysis(analysis);
       setIsInterviewComplete(true);
       setInterviewStep('summary');
+      
+      // Track session completed
+      if (sessionStartTime) {
+        const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+        const completionRate = (allFeedback.length / interviewQuestions.length) * 100;
+        trackSessionCompleted({
+          total_questions: interviewQuestions.length,
+          duration_seconds: durationSeconds,
+          completion_rate: completionRate
+        });
+      }
     } catch (error) {
       console.error('Error generating interview analysis:', error);
       alert('Failed to generate interview analysis. Please try again.');
@@ -570,6 +621,12 @@ export default function InterviewOrchestrator() {
    */
   const startListening = useCallback(async () => {
     try {
+      // Track speech recognition feature usage
+      trackFeatureUsed({
+        feature_type: 'speech_recognition',
+        feature_context: 'answer_input'
+      });
+      
       // Initialize speech service if not already done (request permissions here)
       if (!speechServiceInitialized && speechServiceRef.current) {
         setVoiceStatus('processing');
@@ -701,6 +758,18 @@ export default function InterviewOrchestrator() {
     }
   }, [isListening, startListening, stopListening]);
 
+  /**
+   * Handle hint panel toggle with analytics tracking
+   */
+  const handleHintToggle = useCallback(() => {
+    if (!floatingHint.state.isOpen) {
+      trackFeatureUsed({
+        feature_type: 'hint_panel',
+        feature_context: 'question_tips'
+      });
+    }
+    floatingHint.actions.toggle();
+  }, [floatingHint.state.isOpen, floatingHint.actions]);
 
   // Configuration View
   if (showConfiguration) {
@@ -1043,7 +1112,7 @@ export default function InterviewOrchestrator() {
         {currentQuestion?.tips && currentQuestion.tips.length > 0 && (
           <>
             <HintButton
-              onClick={floatingHint.actions.toggle}
+              onClick={handleHintToggle}
               isOpen={floatingHint.state.isOpen}
               buttonRef={floatingHint.buttonRef}
             />

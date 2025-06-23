@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   CheckCircle, 
   AlertCircle, 
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { InterviewAnalysis } from '../utils/InterviewAnalysisService';
 import type { InterviewConfiguration } from '../types/interview';
+import { trackFeatureUsed } from '../lib/firebase/analytics';
 
 interface InterviewSummaryProps extends InterviewAnalysis {
   onNewInterview: () => void;
@@ -56,6 +57,14 @@ export function InterviewSummary({
       return part;
     });
   };
+
+  // Track feedback view when component mounts
+  useEffect(() => {
+    trackFeatureUsed({
+      feature_type: 'feedback_view',
+      feature_context: 'interview_summary'
+    });
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] gi-gradient-bg p-6">

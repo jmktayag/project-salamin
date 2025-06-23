@@ -45,8 +45,8 @@ The platform uses Google Gemini AI for question generation, response analysis, a
 ## Development Commands
 
 **Core Development:**
-- `npm run dev` - Start development server on http://localhost:3000
-- `npm run build` - Build for production
+- `npm run dev` - Start development server on http://localhost:3000 (Analytics disabled, console logging only)
+- `npm run build` - Build for production (Analytics enabled if configured)
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript type checking
 - `npm run test` - Run all Jest tests
@@ -107,6 +107,15 @@ Create a `.env.local` file in the project root:
 ```bash
 # Google Gemini AI API Key (required)
 NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+
+# Firebase Analytics Configuration (required for user behavior tracking)
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
 **Getting a Gemini API Key:**
@@ -115,11 +124,37 @@ NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
 3. Click "Get API Key" and create a new key
 4. Copy the key to your `.env.local` file
 
+**Setting up Firebase Analytics:**
+1. Visit [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project or use existing one
+3. Enable Analytics for your project
+4. Add a web app to your project
+5. Copy the Firebase configuration values to your `.env.local` file
+
 **Security Notes:**
 - Never commit API keys to version control
-- The `NEXT_PUBLIC_` prefix makes this key accessible to the browser
+- The `NEXT_PUBLIC_` prefix makes these keys accessible to the browser
 - Consider implementing server-side API proxy for production
 - Monitor API usage to avoid unexpected charges
+- Firebase Analytics data is processed according to Google's privacy policies
+
+## Analytics & User Behavior Tracking
+
+The application tracks key user interactions for walk phase testing and product improvement:
+
+**Tracked Events:**
+- `session_started` - When user begins interview (includes job position and interview type)
+- `question_answered` - Each question response (includes question index, category, response length)
+- `session_completed` - Full interview finished (includes total questions, duration, completion rate)
+- `feature_used` - Feature usage (TTS, speech recognition, hint panel, feedback view)
+- `session_abandoned` - User exits early (includes questions completed, abandonment point, duration)
+
+**Privacy Compliance:**
+- No personally identifiable information (PII) is tracked
+- All data collection follows privacy best practices
+- Analytics are **automatically disabled in development mode** - events only log to console
+- Production mode requires Firebase environment variables to be set
+- Analytics can be disabled by removing Firebase environment variables
 
 ## Testing Approach
 
