@@ -23,46 +23,46 @@ const behavioralQuestions: InterviewQuestion[] = [
   },
   {
     id: 'behavioral-2',
-    question: 'Describe a challenging situation you faced at work and how you handled it.',
+    question: 'Tell me about a recent challenge you faced.',
     category: 'Problem Solving',
     difficulty: 'Hard',
     tips: [
-      'Use the STAR method (Situation, Task, Action, Result)',
+      'Choose a specific, relevant example',
       'Focus on your actions and decisions',
       'Highlight what you learned from the experience'
     ]
   },
   {
     id: 'behavioral-3',
-    question: 'Tell me about a time when you had to work with a difficult team member.',
+    question: 'How do you handle difficult team members?',
     category: 'Teamwork',
     difficulty: 'Medium',
     tips: [
-      'Show your communication and conflict resolution skills',
-      'Focus on the positive outcome',
-      'Demonstrate empathy and professionalism'
+      'Share a specific example if possible',
+      'Focus on communication and resolution',
+      'Show empathy and professionalism'
     ]
   },
   {
     id: 'behavioral-4',
-    question: 'Describe a project you led and what made it successful.',
+    question: 'Tell me about a project you led.',
     category: 'Leadership',
     difficulty: 'Medium',
     tips: [
-      'Highlight your leadership and planning skills',
-      'Discuss how you motivated and guided your team',
-      'Quantify the results if possible'
+      'Choose a project that shows leadership skills',
+      'Explain your role and key decisions',
+      'Share the results and impact'
     ]
   },
   {
     id: 'behavioral-5',
-    question: 'Tell me about a time when you failed and what you learned from it.',
+    question: 'Describe a time you failed at something.',
     category: 'Growth',
     difficulty: 'Hard',
     tips: [
-      'Be honest but choose a professional example',
-      'Focus on what you learned and how you improved',
-      'Show resilience and growth mindset'
+      'Choose a professional example',
+      'Focus on lessons learned and growth',
+      'Show resilience and self-awareness'
     ]
   },
   {
@@ -78,13 +78,13 @@ const behavioralQuestions: InterviewQuestion[] = [
   },
   {
     id: 'behavioral-7',
-    question: 'Describe a time when you had to adapt to a significant change at work.',
+    question: 'How do you handle workplace changes?',
     category: 'Adaptability',
     difficulty: 'Medium',
     tips: [
-      'Show your flexibility and openness to change',
-      'Discuss how you helped others adapt too',
-      'Highlight the positive outcomes of the change'
+      'Share a specific example of adapting',
+      'Show flexibility and positive attitude',
+      'Mention helping others when possible'
     ]
   },
   {
@@ -104,46 +104,46 @@ const behavioralQuestions: InterviewQuestion[] = [
 const technicalQuestions: InterviewQuestion[] = [
   {
     id: 'technical-1',
-    question: 'What are your core technical skills and how do you stay current?',
+    question: 'What are your core technical skills?',
     category: 'Technical Skills',
     difficulty: 'Easy',
     tips: [
-      'List your most relevant technical skills for this role',
-      'Mention specific learning resources you use',
-      'Show commitment to continuous learning'
+      'Focus on skills most relevant to this role',
+      'Mention your experience level with each',
+      'Be specific about technologies you know well'
     ]
   },
   {
     id: 'technical-2',
-    question: 'Describe a complex technical problem you solved recently.',
+    question: 'Tell me about a technical problem you solved.',
     category: 'Problem Solving',
     difficulty: 'Hard',
     tips: [
-      'Break down the problem and your solution approach',
-      'Explain your thought process and decision-making',
-      'Discuss the tools and technologies you used'
+      'Choose a recent, relevant example',
+      'Explain your approach step by step',
+      'Mention the tools and technologies used'
     ]
   },
   {
     id: 'technical-3',
-    question: 'How do you approach debugging when something isn\'t working?',
+    question: 'How do you debug code issues?',
     category: 'Debugging',
     difficulty: 'Medium',
     tips: [
-      'Describe your systematic debugging methodology',
-      'Mention specific tools and techniques you use',
-      'Show patience and analytical thinking'
+      'Describe your step-by-step approach',
+      'Mention tools and techniques you use',
+      'Show systematic thinking'
     ]
   },
   {
     id: 'technical-4',
-    question: 'What factors do you consider when choosing technologies for a project?',
+    question: 'How do you choose technologies for projects?',
     category: 'Architecture',
     difficulty: 'Medium',
     tips: [
-      'Discuss scalability, maintainability, and team expertise',
       'Consider project requirements and constraints',
-      'Show balance between innovation and practicality'
+      'Think about team skills and maintainability',
+      'Balance innovation with practicality'
     ]
   },
   {
@@ -159,35 +159,35 @@ const technicalQuestions: InterviewQuestion[] = [
   },
   {
     id: 'technical-6',
-    question: 'Describe your experience with testing and quality assurance.',
+    question: 'What\'s your experience with testing?',
     category: 'Testing',
     difficulty: 'Medium',
     tips: [
-      'Discuss different types of testing you\'ve done',
-      'Mention specific testing frameworks and tools',
-      'Show understanding of test-driven development'
+      'Mention types of testing you\'ve done',
+      'Share specific frameworks and tools used',
+      'Discuss your testing approach'
     ]
   },
   {
     id: 'technical-7',
-    question: 'How do you handle performance optimization in your applications?',
+    question: 'How do you optimize application performance?',
     category: 'Performance',
     difficulty: 'Hard',
     tips: [
-      'Discuss profiling and monitoring techniques',
-      'Mention specific optimization strategies you\'ve used',
-      'Show understanding of performance trade-offs'
+      'Share specific optimization techniques',
+      'Mention profiling and monitoring tools',
+      'Discuss trade-offs you consider'
     ]
   },
   {
     id: 'technical-8',
-    question: 'What\'s your experience with version control and collaboration?',
+    question: 'How do you use version control?',
     category: 'Collaboration',
     difficulty: 'Easy',
     tips: [
-      'Discuss your Git workflow and branching strategies',
-      'Mention code review processes you\'ve participated in',
-      'Show understanding of collaborative development'
+      'Mention your Git workflow and branching',
+      'Discuss code review experience',
+      'Show collaborative development understanding'
     ]
   }
 ];
@@ -196,90 +196,90 @@ const technicalQuestions: InterviewQuestion[] = [
 const mixedQuestions: InterviewQuestion[] = [
   {
     id: 'mixed-1',
-    question: 'Tell me about yourself and your technical background.',
+    question: 'Tell me about your technical background.',
     category: 'Personal',
     difficulty: 'Easy',
     tips: [
-      'Balance personal story with technical expertise',
-      'Highlight relevant experience and skills',
-      'Connect your background to the role'
+      'Focus on relevant technical experience',
+      'Highlight key skills and achievements',
+      'Connect your background to this role'
     ]
   },
   {
     id: 'mixed-2',
-    question: 'Describe a technical project you\'re proud of and the challenges you overcame.',
+    question: 'Tell me about a project you\'re proud of.',
     category: 'Technical Achievement',
     difficulty: 'Medium',
     tips: [
-      'Choose a project that showcases relevant skills',
-      'Discuss both technical and soft skill challenges',
-      'Quantify the impact and results'
+      'Choose a project showing relevant skills',
+      'Explain the challenges you faced',
+      'Share the impact and results'
     ]
   },
   {
     id: 'mixed-3',
-    question: 'How do you approach learning new technologies or frameworks?',
+    question: 'How do you learn new technologies?',
     category: 'Learning',
     difficulty: 'Medium',
     tips: [
-      'Describe your systematic approach to learning',
-      'Mention how you practice and apply new knowledge',
-      'Show adaptability and growth mindset'
+      'Describe your learning approach',
+      'Mention how you practice new skills',
+      'Show curiosity and growth mindset'
     ]
   },
   {
     id: 'mixed-4',
-    question: 'Tell me about a time when you had to explain a complex technical concept to a non-technical person.',
+    question: 'How do you explain technical concepts to non-technical people?',
     category: 'Communication',
     difficulty: 'Hard',
     tips: [
-      'Show your ability to simplify complex ideas',
-      'Demonstrate patience and empathy',
-      'Focus on successful communication outcomes'
+      'Share a specific example',
+      'Show how you simplify complex ideas',
+      'Demonstrate patience and empathy'
     ]
   },
   {
     id: 'mixed-5',
-    question: 'How do you balance technical excellence with meeting deadlines?',
+    question: 'How do you balance quality with deadlines?',
     category: 'Time Management',
     difficulty: 'Medium',
     tips: [
-      'Discuss prioritization and trade-off decisions',
+      'Discuss prioritization strategies',
       'Show understanding of business needs',
-      'Demonstrate both quality focus and practical thinking'
+      'Balance quality focus with practical delivery'
     ]
   },
   {
     id: 'mixed-6',
-    question: 'Describe your experience working in a team development environment.',
+    question: 'How do you work in development teams?',
     category: 'Teamwork',
     difficulty: 'Medium',
     tips: [
-      'Discuss collaboration tools and processes',
-      'Highlight your role in team success',
-      'Show ability to both lead and follow'
+      'Share collaboration experience',
+      'Mention tools and processes you use',
+      'Show ability to lead and follow'
     ]
   },
   {
     id: 'mixed-7',
-    question: 'What\'s the most challenging technical decision you\'ve had to make recently?',
+    question: 'Tell me about a tough technical decision you made.',
     category: 'Decision Making',
     difficulty: 'Hard',
     tips: [
       'Explain your decision-making process',
       'Discuss the factors you considered',
-      'Reflect on the outcome and lessons learned'
+      'Share the outcome and lessons learned'
     ]
   },
   {
     id: 'mixed-8',
-    question: 'How do you stay motivated when working on long-term or difficult projects?',
+    question: 'How do you stay motivated on difficult projects?',
     category: 'Motivation',  
     difficulty: 'Medium',
     tips: [
-      'Discuss your strategies for maintaining momentum',
+      'Share strategies for maintaining momentum',
       'Show resilience and persistence',
-      'Connect your motivation to impact and growth'
+      'Connect motivation to impact and growth'
     ]
   }
 ];
@@ -299,13 +299,13 @@ const rawInterviewQuestions: InterviewQuestion[] = [
   },
   {
     id: '2',
-    question: 'What are your greatest strengths and how do they align with this position?',
+    question: 'What are your greatest strengths?',
     category: 'Skills',
     difficulty: 'Medium',
     tips: [
-      'Choose strengths relevant to the job',
+      'Choose strengths relevant to this role',
       'Provide specific examples',
-      'Explain how these strengths benefit the company'
+      'Show how these strengths add value'
     ]
   }
 ];

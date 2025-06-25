@@ -57,7 +57,7 @@ export class QuestionGenerator extends BaseAIService {
    * Build the AI prompt for question generation
    */
   private buildPrompt(position: string, interviewType: InterviewType, questionCount: number): string {
-    const basePrompt = `Generate ${questionCount} interview questions for a ${position} position.`;
+    const basePrompt = `Generate ${questionCount} natural, conversational interview questions for a ${position} position that sound like real human interviewers.`;
     
     let interviewTypeInstructions = '';
     switch (interviewType) {
@@ -71,7 +71,7 @@ export class QuestionGenerator extends BaseAIService {
         - Communication and interpersonal skills
         - Decision-making processes
         
-        Use STAR method compatible questions (Situation, Task, Action, Result).`;
+        Questions should invite natural storytelling, not structured responses.`;
         break;
         
       case 'technical':
@@ -84,7 +84,7 @@ export class QuestionGenerator extends BaseAIService {
         - Technical challenges and debugging skills
         - Tool and technology proficiency
         
-        Include both conceptual and practical questions.`;
+        Keep questions conversational and focused on one concept at a time.`;
         break;
         
       case 'mixed':
@@ -92,7 +92,7 @@ export class QuestionGenerator extends BaseAIService {
         Create a balanced mix of behavioral and technical questions:
         - 50% behavioral questions focusing on experiences and soft skills
         - 50% technical questions assessing domain expertise
-        - Ensure questions complement each other
+        - Each question should feel natural and conversational
         - Progress from easier to more challenging topics`;
         break;
     }
@@ -101,12 +101,29 @@ export class QuestionGenerator extends BaseAIService {
 
 ${interviewTypeInstructions}
 
-Requirements:
-- Questions should be specific to the ${position} role
+CRITICAL REQUIREMENTS FOR NATURAL QUESTIONS:
+- Maximum 10-15 words per question - keep them short and simple
+- Each question must test ONLY ONE specific competency or skill
+- Use conversational language that sounds like how real interviewers speak
+- Avoid multi-part questions or bullet points within questions
+- No formal, prescriptive, or robotic language
+- Questions should flow naturally in conversation
+
+GOOD EXAMPLES:
+- "Tell me about a recent challenge you faced."
+- "Describe a project you're proud of."
+- "How do you handle working under pressure?"
+- "What's your experience with [specific technology]?"
+
+BAD EXAMPLES (avoid these patterns):
+- "Describe a challenging situation you faced, including the context, your specific actions, and the final results."
+- Questions with multiple parts or sub-questions
+- Overly structured or formal language
+
+Additional Requirements:
+- Questions should be specific to the ${position} role when relevant
 - Vary difficulty levels: ${this.getDifficultyDistribution(questionCount)}
-- Each question should be clear, professional, and interview-appropriate
 - Provide 2-3 helpful tips for each question to guide the candidate
-- Questions should allow for detailed, meaningful responses
 - Avoid yes/no questions or overly broad topics
 
 Return the response as a JSON array with this exact structure:
@@ -120,7 +137,7 @@ Return the response as a JSON array with this exact structure:
   }
 ]
 
-Ensure all questions are relevant, professional, and appropriate for a ${position} interview.`;
+Remember: Questions should sound natural and conversational, like they come from a real human interviewer having a genuine conversation.`;
   }
 
   /**
