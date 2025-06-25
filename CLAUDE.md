@@ -71,16 +71,10 @@ This is a Next.js 14 App Router application with TypeScript. The main applicatio
 ### AI Integration Architecture
 The application uses Google Gemini AI through four service classes in `app/utils/`:
 
-<<<<<<< refactor/improve-naming-consistency
 - **InterviewFeedbackService** - Provides per-question analysis using `gemini-2.0-flash-lite`
 - **InterviewAnalysisService** - Generates comprehensive interview assessment
 - **TextToSpeechService** - Converts text to speech using `gemini-2.5-flash-preview-tts` with WAV format conversion
-=======
-- **FeedbackGenerator** - Provides per-question analysis using `gemini-2.0-flash-lite`
-- **InterviewAnalyzer** - Generates comprehensive interview assessment
-- **TextToSpeech** - Converts text to speech using `gemini-2.5-flash-preview-tts` with WAV format conversion
 - **AudioCacheManager** - Browser-based IndexedDB caching for TTS audio files to improve performance and reduce API calls
->>>>>>> master
 
 ### Interview Flow State Machine
 ```
