@@ -5,7 +5,7 @@ import { useNavigation } from './navigation/NavigationProvider';
 
 // Question count constants
 const QUESTION_COUNT = {
-  DEVELOPMENT: 1,
+  DEVELOPMENT: 10,
   PRODUCTION: 5,
 } as const;
 
