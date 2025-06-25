@@ -1,69 +1,38 @@
-## Optimized Claude Code Prompt
+Phase 1 Claude Code Prompt: Question Analysis & Restructuring
+You are analyzing and restructuring the interview questions in an AI-powered interview practice application to make them more realistic and focused.
+Current Problem:
 
-Implement Firebase Analytics for the Salamin interview practice platform. Set up Firebase project, install SDK, and add custom event tracking for user behavior during interviews.
+Questions are too complex with multiple parts in one question
+Not realistic compared to actual interview scenarios
+Need better separation between technical and behavioral assessment
 
-**Requirements:**
+Your Task:
+Analyze the current question structure in app/data/interviewQuestions.ts and restructure the questions to be more interview-realistic.
+Specific Actions:
 
-### 1. Firebase Setup
-- Create new Firebase project with Analytics enabled
-- Add web app configuration
-- Install Firebase SDK in Next.js project
+Audit Current Questions:
 
-### 2. Basic Event Tracking
-Track these key events for walk phase testing:
-- `session_started` - When user begins interview
-- `question_answered` - Each question response
-- `session_completed` - Full interview finished
-- `feature_used` - TTS, speech recognition usage
-- `session_abandoned` - User exits early
+Identify questions that contain multiple concepts or require multiple answers
+Categorize questions by complexity level and scope
+Flag questions that don't match real interview patterns
 
-### 3. Implementation Files
-Create these files:
-```
-app/lib/firebase/
-├── config.ts          # Firebase initialization
-├── analytics.ts       # Event tracking functions
-└── types.ts          # TypeScript interfaces
 
-app/components/
-└── FirebaseProvider.tsx  # React context provider
-```
+Restructure Multi-Part Questions:
 
-### 4. Integration Points
-Add tracking to:
-- `InterviewOrchestrator.tsx` - Session start/end tracking
-- `InterviewSummary.tsx` - Completion tracking
-- Feature components - Usage tracking
+Break down complex questions into focused, single-concept questions
+Ensure each question tests one specific skill or knowledge area
+Maintain the original intent but make each question standalone
 
-### 5. Environment Setup
-Add Firebase config to `.env.local`:
-```bash
-NEXT_PUBLIC_FIREBASE_API_KEY=your-key
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
-```
 
-**Technical Requirements:**
-- TypeScript implementation
-- Next.js 14 App Router compatibility
-- Privacy-compliant (no PII tracking)
-- Development debugging support
-- Zero performance impact
+Create Question Variants:
 
-**Deliverables:**
-1. Complete Firebase project setup guide
-2. All necessary TypeScript files
-3. Integration examples for existing components
-4. Environment configuration
-5. Basic privacy compliance
+For technical questions: Create progressive difficulty levels (Junior/Mid/Senior)
+For behavioral questions: Ensure each focuses on one specific competency
+Add role-specific variations where appropriate
 
-Focus on a clean, minimal implementation that gets Firebase Analytics working quickly with the essential events needed for walk phase testing.
 
-Some information to consider:
-apiKey: "AIzaSyBgXpFKKitbJx5_8j2U0hP0wbEy21xMvjA",
-  authDomain: "project-salamin-5a2fd.firebaseapp.com",
-  projectId: "project-salamin-5a2fd",
-  storageBucket: "project-salamin-5a2fd.firebasestorage.app",
-  messagingSenderId: "896862111946",
-  appId: "1:896862111946:web:f344fd6bfd19228f334c33",
-  measurementId: "G-3W0G7XFJLB"
+Improve Question Quality:
+
+Make questions sound more natural and conversational
+Ensure questions are commonly asked in real interviews
+Add appropriate context where needed
