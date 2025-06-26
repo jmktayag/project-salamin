@@ -6,7 +6,10 @@ import {
   QuestionAnsweredEvent, 
   SessionCompletedEvent, 
   FeatureUsedEvent, 
-  SessionAbandonedEvent 
+  SessionAbandonedEvent,
+  UserSignedInEvent,
+  UserSignedUpEvent,
+  UserSignedOutEvent
 } from './types';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -71,6 +74,30 @@ export function trackFeatureUsed(data: Omit<FeatureUsedEvent, 'event_name' | 'ti
 export function trackSessionAbandoned(data: Omit<SessionAbandonedEvent, 'event_name' | 'timestamp'>): void {
   logAnalyticsEvent({
     event_name: 'session_abandoned',
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+export function trackUserSignedIn(data: Omit<UserSignedInEvent, 'event_name' | 'timestamp'>): void {
+  logAnalyticsEvent({
+    event_name: 'user_signed_in',
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+export function trackUserSignedUp(data: Omit<UserSignedUpEvent, 'event_name' | 'timestamp'>): void {
+  logAnalyticsEvent({
+    event_name: 'user_signed_up',
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+export function trackUserSignedOut(data: Omit<UserSignedOutEvent, 'event_name' | 'timestamp'>): void {
+  logAnalyticsEvent({
+    event_name: 'user_signed_out',
     timestamp: Date.now(),
     ...data
   });

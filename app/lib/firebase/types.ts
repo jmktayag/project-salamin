@@ -36,12 +36,34 @@ export interface SessionAbandonedEvent {
   timestamp: number;
 }
 
+export interface UserSignedInEvent {
+  event_name: 'user_signed_in';
+  auth_method: 'email' | 'google';
+  is_new_user?: boolean;
+  timestamp: number;
+}
+
+export interface UserSignedUpEvent {
+  event_name: 'user_signed_up';
+  auth_method: 'email' | 'google';
+  timestamp: number;
+}
+
+export interface UserSignedOutEvent {
+  event_name: 'user_signed_out';
+  session_duration_seconds?: number;
+  timestamp: number;
+}
+
 export type AnalyticsEvent = 
   | SessionStartedEvent
   | QuestionAnsweredEvent
   | SessionCompletedEvent
   | FeatureUsedEvent
-  | SessionAbandonedEvent;
+  | SessionAbandonedEvent
+  | UserSignedInEvent
+  | UserSignedUpEvent
+  | UserSignedOutEvent;
 
 export interface AnalyticsContext {
   isEnabled: boolean;
