@@ -5,7 +5,7 @@ import { useNavigation } from './navigation/NavigationProvider';
 
 // Question count constants
 const QUESTION_COUNT = {
-  DEVELOPMENT: 10,
+  DEVELOPMENT: 3,
   PRODUCTION: 5,
 } as const;
 
@@ -25,6 +25,11 @@ import { TextToSpeechService } from '../utils/TextToSpeechService';
 import { InterviewFeedbackService } from '../utils/InterviewFeedbackService';
 import { QuestionGenerator } from '../utils/QuestionGenerator';
 import { InterviewSummary } from './InterviewSummary';
+import { SessionHistory } from './SessionHistory';
+import { SessionHistoryService } from '../utils/SessionHistoryService';
+import { SessionExportService } from '../utils/SessionExportService';
+import { FirestoreConnectionTest } from '../utils/FirestoreConnectionTest';
+import { useAuth } from '../hooks/useAuth';
 import { InterviewAnalysisService, InterviewAnalysis } from '../utils/InterviewAnalysisService';
 import { IntegratedSpeechService, IntegratedSpeechCallbacks } from '../utils/IntegratedSpeechService';
 import { VoiceStatus, TranscriptionError } from '../types/speech';
@@ -123,13 +128,16 @@ const FEEDBACK_STYLES = {
  * including speech recognition, text-to-speech, and feedback
  */
 export default function InterviewOrchestrator() {
-  // Navigation context
+  // Context hooks
   const { 
+    currentPage,
     setCurrentPage, 
     setInterviewStep, 
     setInterviewStarted,
     registerResetToHome
   } = useNavigation();
+  
+  const { user } = useAuth();
 
   // State management
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
@@ -155,6 +163,10 @@ export default function InterviewOrchestrator() {
   const [interviewQuestions, setInterviewQuestions] = useState<InterviewQuestion[]>([]);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [questionGenerationError, setQuestionGenerationError] = useState<string | null>(null);
+  
+  // Session History State
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [sessionSaveStatus, setSessionSaveStatus] = useState<'none' | 'saving' | 'saved' | 'failed'>('none');
   
   // Floating hint system
   const floatingHint = useFloatingHint({
@@ -206,7 +218,7 @@ export default function InterviewOrchestrator() {
     }
   }, []);
 
-  // Initialize AI services with API key
+  // Initialize AI services with API key and run Firestore diagnostics
   React.useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
@@ -222,6 +234,9 @@ export default function InterviewOrchestrator() {
       
       // Initialize speech service with callbacks
       initializeSpeechService();
+      
+      // Run Firestore diagnostics
+      FirestoreConnectionTest.runDiagnostics().catch(console.error);
       
     } catch (error) {
       console.error('Failed to initialize AI services:', error);
@@ -401,12 +416,21 @@ export default function InterviewOrchestrator() {
         abandonment_point: 'interview',
         duration_seconds: durationSeconds
       });
+
+      // Mark session as abandoned if user is authenticated
+      if (user && currentSessionId) {
+        try {
+          SessionHistoryService.abandonSession(currentSessionId);
+        } catch (error) {
+          console.error('Failed to mark session as abandoned:', error);
+        }
+      }
     }
     
     setShowConfiguration(false);
     setCurrentPage('home');
     setInterviewStarted(false);
-  }, [setCurrentPage, setInterviewStarted, isInterviewStarted, sessionStartTime, allFeedback.length]);
+  }, [setCurrentPage, setInterviewStarted, isInterviewStarted, sessionStartTime, allFeedback.length, user, currentSessionId]);
 
   /**
    * Starts a new interview session with configuration
@@ -450,12 +474,50 @@ export default function InterviewOrchestrator() {
         job_position: config.position,
         interview_type: config.interviewType
       });
+
+      // Create session record if user is authenticated
+      if (user) {
+        console.log('[Session Debug] User authenticated, attempting to create session:', {
+          userId: user.uid,
+          position: config.position,
+          interviewType: config.interviewType,
+          NODE_ENV: process.env.NODE_ENV
+        });
+        
+        setSessionSaveStatus('saving');
+        
+        try {
+          const totalQuestions = process.env.NODE_ENV === 'development' 
+            ? QUESTION_COUNT.DEVELOPMENT 
+            : QUESTION_COUNT.PRODUCTION;
+          
+          console.log('[Session Debug] Creating session with totalQuestions:', totalQuestions);
+          
+          const sessionId = await SessionHistoryService.createSession(
+            user.uid,
+            config.position,
+            config.interviewType,
+            totalQuestions
+          );
+          
+          console.log('[Session Debug] Session created successfully:', sessionId);
+          setCurrentSessionId(sessionId);
+          setSessionSaveStatus('saved');
+        } catch (error) {
+          console.error('[Session Debug] Failed to create session record:', error);
+          setSessionSaveStatus('failed');
+          // Continue with interview even if session creation fails
+        }
+      } else {
+        console.log('[Session Debug] User not authenticated, skipping session creation');
+        setSessionSaveStatus('none');
+      }
     } catch (error) {
       console.error('Failed to start interview:', error);
       // Don't start interview if question generation fails completely
       alert('Failed to prepare interview questions. Please try again.');
     }
-  }, [generateInterviewQuestions, setCurrentPage, setInterviewStep, setInterviewStarted]);
+  }, [generateInterviewQuestions, setCurrentPage, setInterviewStep, setInterviewStarted, user, currentSessionId]);
 
   /**
    * Handles submission of the current answer and shows feedback
@@ -502,6 +564,33 @@ export default function InterviewOrchestrator() {
           question_category: currentQuestion.category,
           response_length: response.trim().length
         });
+
+        // Update session with question and response if user is authenticated
+        if (user && currentSessionId) {
+          console.log('[Session Debug] Updating session with question:', {
+            sessionId: currentSessionId,
+            questionIndex: currentQuestionIndex,
+            questionText: currentQuestion.question.substring(0, 50) + '...'
+          });
+          
+          try {
+            await SessionHistoryService.updateSessionWithQuestion(currentSessionId, {
+              question: currentQuestion.question,
+              category: currentQuestion.category,
+              difficulty: currentQuestion.difficulty || 'Medium',
+              userResponse: response.trim(),
+              responseTimestamp: Date.now(),
+              feedback: generatedFeedback.map(f => ({ type: f.type, text: f.text }))
+            });
+            
+            console.log('[Session Debug] Session updated successfully');
+          } catch (error) {
+            console.error('[Session Debug] Failed to update session with question:', error);
+            // Continue with interview even if session update fails
+          }
+        } else {
+          console.log('[Session Debug] Skipping session update - user:', !!user, 'sessionId:', !!currentSessionId);
+        }
       } else {
         console.error('Feedback generator not initialized');
         setFeedback(SAMPLE_FEEDBACK);
@@ -518,7 +607,7 @@ export default function InterviewOrchestrator() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [response, currentQuestion]);
+  }, [response, currentQuestion, user, currentSessionId, currentQuestionIndex]);
 
   const handleFinish = useCallback(async () => {
     if (!interviewAnalyzerRef.current) {
@@ -543,13 +632,40 @@ export default function InterviewOrchestrator() {
           completion_rate: completionRate
         });
       }
+
+      // Complete session record if user is authenticated
+      if (user && currentSessionId && analysis) {
+        console.log('[Session Debug] Completing session:', {
+          sessionId: currentSessionId,
+          score: analysis.score,
+          verdict: analysis.verdict
+        });
+        
+        try {
+          await SessionHistoryService.completeSession(currentSessionId, {
+            overallScore: analysis.score,
+            strengths: analysis.strengths,
+            weaknesses: analysis.weaknesses,
+            recommendations: analysis.suggestions,
+            hiringVerdict: analysis.verdict,
+            detailedFeedback: analysis.summary
+          });
+          
+          console.log('[Session Debug] Session completed successfully');
+        } catch (error) {
+          console.error('[Session Debug] Failed to complete session record:', error);
+          // Continue with interview display even if session completion fails
+        }
+      } else {
+        console.log('[Session Debug] Skipping session completion - user:', !!user, 'sessionId:', !!currentSessionId, 'analysis:', !!analysis);
+      }
     } catch (error) {
       console.error('Error generating interview analysis:', error);
       alert('Failed to generate interview analysis. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
-  }, [allFeedback, setInterviewStep]);
+  }, [allFeedback, setInterviewStep, user, currentSessionId, sessionStartTime, interviewQuestions.length]);
 
   /**
    * Restart interview from summary screen
@@ -567,6 +683,8 @@ export default function InterviewOrchestrator() {
     setInterviewQuestions([]);
     setQuestionGenerationError(null);
     setInterviewConfig(null);
+    setCurrentSessionId(null);
+    setSessionSaveStatus('none');
     floatingHint.actions.reset();
     
     // Reset navigation state
@@ -578,6 +696,40 @@ export default function InterviewOrchestrator() {
   React.useEffect(() => {
     registerResetToHome(handleRestartInterview);
   }, [registerResetToHome, handleRestartInterview]);
+
+  /**
+   * Handler for viewing session details
+   */
+  const handleViewSession = useCallback((sessionId: string) => {
+    // This is handled by the SessionHistory component now
+    console.log('View session:', sessionId);
+  }, []);
+
+  /**
+   * Handler for exporting session data
+   */
+  const handleExportSession = useCallback(async (sessionId: string) => {
+    if (!user) return;
+    
+    try {
+      const session = await SessionHistoryService.getSessionById(sessionId, user.uid);
+      if (session) {
+        // Show options for export format
+        const exportFormat = window.confirm('Choose export format:\nOK = Text format\nCancel = JSON format');
+        
+        if (exportFormat) {
+          SessionExportService.exportAsText(session);
+        } else {
+          SessionExportService.exportAsJSON(session);
+        }
+      } else {
+        alert('Session not found or you do not have permission to export it.');
+      }
+    } catch (error) {
+      console.error('Failed to export session:', error);
+      alert('Failed to export session. Please try again.');
+    }
+  }, [user]);
 
   /**
    * Moves to the next question or ends the interview
@@ -771,6 +923,16 @@ export default function InterviewOrchestrator() {
     floatingHint.actions.toggle();
   }, [floatingHint.state.isOpen, floatingHint.actions]);
 
+  // History Page View
+  if (currentPage === 'history') {
+    return (
+      <SessionHistory
+        onViewSession={handleViewSession}
+        onExportSession={handleExportSession}
+      />
+    );
+  }
+
   // Configuration View
   if (showConfiguration) {
     return (
@@ -927,6 +1089,24 @@ export default function InterviewOrchestrator() {
           {questionGenerationError && (
             <div className="mt-2 text-xs text-yellow-600 text-center">
               Using fallback questions for this interview
+            </div>
+          )}
+          
+          {/* Session Save Status */}
+          {user && (
+            <div className="mt-2 text-xs text-center">
+              {sessionSaveStatus === 'saving' && (
+                <span className="text-blue-600">💾 Saving session...</span>
+              )}
+              {sessionSaveStatus === 'saved' && (
+                <span className="text-green-600">✅ Session saved</span>
+              )}
+              {sessionSaveStatus === 'failed' && (
+                <span className="text-red-600">⚠️ Session save failed (continuing anyway)</span>
+              )}
+              {sessionSaveStatus === 'none' && (
+                <span className="text-gray-500">ℹ️ Session not saved (sign in to save progress)</span>
+              )}
             </div>
           )}
         </div>

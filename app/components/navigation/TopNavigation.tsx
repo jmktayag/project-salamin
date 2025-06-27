@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { BookOpen, User, LogOut, ChevronDown } from 'lucide-react';
+import { BookOpen, User, LogOut, ChevronDown, History } from 'lucide-react';
 import { useNavigation } from './NavigationProvider';
 import { useAuth } from '../../hooks/useAuth';
 import AuthModal from '../auth/AuthModal';
 import { AuthModalMode } from '../../lib/firebase/auth-types';
 
 export default function TopNavigation() {
-  const { resetToHome } = useNavigation();
+  const { resetToHome, setCurrentPage } = useNavigation();
   const { user, signOut, loading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('signin');
@@ -57,6 +57,11 @@ export default function TopNavigation() {
 
   const toggleUserMenu = () => {
     setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const handleHistoryClick = () => {
+    setCurrentPage('history');
+    setIsUserMenuOpen(false);
   };
 
 
@@ -118,6 +123,13 @@ export default function TopNavigation() {
                           {user.email}
                         </p>
                       </div>
+                      <button
+                        onClick={handleHistoryClick}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <History className="w-4 h-4 mr-2" />
+                        Interview History
+                      </button>
                       <button
                         onClick={handleSignOut}
                         className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
