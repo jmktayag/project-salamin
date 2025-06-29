@@ -209,10 +209,10 @@ export default function InterviewConfiguration({
               <button
                 type="submit"
                 disabled={!isFormValid}
-                className={`inline-flex items-center px-8 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                className={`inline-flex items-center px-8 py-3 rounded-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
                   isFormValid
-                    ? 'gi-btn-primary'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed rounded-lg'
+                    ? 'text-white bg-teal-600 hover:bg-teal-700'
+                    : 'bg-gray-400 text-gray-500 cursor-not-allowed'
                 }`}
               >
                 Start Interview

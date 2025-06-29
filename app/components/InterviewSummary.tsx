@@ -184,7 +184,7 @@ export function InterviewSummary({
         <div className="flex flex-col gap-3">
           <button
             onClick={onNewInterview}
-            className="w-full gi-btn-primary inline-flex items-center justify-center gap-2 px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
           >
             Start New Interview
             <ArrowRight className="w-4 h-4" />

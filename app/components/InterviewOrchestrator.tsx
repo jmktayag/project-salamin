@@ -1261,8 +1261,8 @@ export default function InterviewOrchestrator() {
             {!hasAnswerSubmitted ? (
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
+                disabled={isSubmitting || response.trim() === ''}
+                className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Answer'}
               </button>
@@ -1272,14 +1272,14 @@ export default function InterviewOrchestrator() {
                   <button
                     onClick={handleFinish}
                     disabled={isAnalyzing}
-                    className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
+                    className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
                   >
                     Finish Interview
                   </button>
                 ) : (
                   <button
                     onClick={proceedToNextQuestion}
-                    className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
                   >
                     Next Question
                   </button>
