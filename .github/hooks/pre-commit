@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Pre-commit hook to prevent commits to develop and master branches
+# This prevents accidental direct commits to protected branches
+
+protected_branches="develop master main"
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Check if current branch is protected
+for protected in $protected_branches; do
+    if [[ "$current_branch" == "$protected" ]]; then
+        echo ""
+        echo "🚫 BLOCKED: Direct commit to '$current_branch' branch is not allowed!"
+        echo ""
+        echo "   This repository requires all changes to go through Pull Requests."
+        echo "   Protected branches: $protected_branches"
+        echo ""
+        echo "✅ Please create a feature branch instead:"
+        echo "   git checkout -b feature/your-feature-name"
+        echo "   git add ."
+        echo "   git commit -m 'your commit message'"
+        echo "   git push -u origin feature/your-feature-name"
+        echo ""
+        echo "💡 Then create a Pull Request on GitHub to merge into $current_branch"
+        echo ""
+        exit 1
+    fi
+done
+
+# Allow commit if not on protected branch
+exit 0
