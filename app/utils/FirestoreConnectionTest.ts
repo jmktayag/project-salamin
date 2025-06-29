@@ -1,4 +1,4 @@
-import { doc, getDoc, collection, getDocs, limit, query } from 'firebase/firestore';
+import { collection, getDocs, limit, query } from 'firebase/firestore';
 import { db } from '../lib/firebase/config';
 
 export class FirestoreConnectionTest {

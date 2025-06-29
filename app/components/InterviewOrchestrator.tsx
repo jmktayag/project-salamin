@@ -90,7 +90,7 @@ interface SpeechRecognitionInterface extends EventTarget {
   interimResults: boolean;
   onresult: (event: SpeechRecognitionEvent) => void;
   onend: () => void;
-  onerror: (event: any) => void;
+  onerror: (event: Event) => void;
   onstart: () => void;
   start: () => void;
   stop: () => void;
@@ -518,7 +518,7 @@ export default function InterviewOrchestrator() {
       // Don't start interview if question generation fails completely
       alert('Failed to prepare interview questions. Please try again.');
     }
-  }, [generateInterviewQuestions, setCurrentPage, setInterviewStep, setInterviewStarted, user, currentSessionId]);
+  }, [generateInterviewQuestions, setCurrentPage, setInterviewStep, setInterviewStarted, user, floatingHint.actions]);
 
   /**
    * Handles submission of the current answer and shows feedback
@@ -691,7 +691,7 @@ export default function InterviewOrchestrator() {
     // Reset navigation state
     setCurrentPage('home');
     setInterviewStarted(false);
-  }, [setCurrentPage, setInterviewStarted]);
+  }, [setCurrentPage, setInterviewStarted, floatingHint.actions]);
 
   // Register reset to home function with navigation
   React.useEffect(() => {
@@ -755,16 +755,8 @@ export default function InterviewOrchestrator() {
       setInterviewStep('summary');
       setHasAnswerSubmitted(false);
     }
-  }, [currentQuestionIndex, interviewQuestions.length, setInterviewStep]);
+  }, [currentQuestionIndex, interviewQuestions.length, setInterviewStep, floatingHint.actions]);
 
-  /**
-   * Saves feedback for the current question
-   */
-  const handleSaveFeedback = useCallback(() => {
-    if (currentQuestion) {
-      console.log('Saving feedback for question:', currentQuestion.id);
-    }
-  }, [currentQuestion]);
 
 
 
@@ -819,8 +811,8 @@ export default function InterviewOrchestrator() {
       recognition.lang = 'en-US';
       recognition.interimResults = false;
       // Add mobile-friendly settings
-      (recognition as any).maxAlternatives = 1;
-      (recognition as any).continuous = false;
+      (recognition as unknown as { maxAlternatives: number }).maxAlternatives = 1;
+      (recognition as unknown as { continuous: boolean }).continuous = false;
       
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         // Optimized transcript processing
@@ -837,18 +829,19 @@ export default function InterviewOrchestrator() {
         setVoiceStatus('idle');
       };
       
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
+      recognition.onerror = (event: Event) => {
+        const errorEvent = event as any;
+        console.error('Speech recognition error:', errorEvent.error);
         setIsListening(false);
         
         // Handle specific errors more gracefully
-        if (event.error === 'not-allowed') {
+        if (errorEvent.error === 'not-allowed') {
           setVoiceStatus('error');
           alert('Microphone permission denied. Please allow microphone access and try again.');
-        } else if (event.error === 'no-speech') {
+        } else if (errorEvent.error === 'no-speech') {
           setVoiceStatus('idle');
           // Don't show error for no-speech, just reset
-        } else if (event.error === 'network') {
+        } else if (errorEvent.error === 'network') {
           setVoiceStatus('error');
           alert('Network error occurred. Please check your connection and try again.');
         } else {

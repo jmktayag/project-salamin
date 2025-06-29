@@ -1,17 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   History, 
   Filter, 
   Search, 
   RefreshCw, 
   Calendar,
-  TrendingUp,
   Clock,
-  Award,
   PlayCircle,
-  Zap,
   Target,
   Star
 } from 'lucide-react';
@@ -48,16 +45,7 @@ export function SessionHistory({ onViewSession, onExportSession, onStartNewInter
     totalInterviewTime: 0
   });
 
-  useEffect(() => {
-    if (user) {
-      loadSessions();
-      loadStats();
-      // Track dashboard view
-      trackDashboardViewed({ section: 'history' });
-    }
-  }, [user, filters]);
-
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -80,23 +68,33 @@ export function SessionHistory({ onViewSession, onExportSession, onStartNewInter
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, filters, searchTerm]);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     if (!user) return;
     
     try {
-      const userStats = await SessionHistoryService.getUserSessionStats(user.uid);
+      const sessionStats = await SessionHistoryService.getUserSessionStats(user.uid);
       setStats({
-        totalSessions: userStats.totalSessions,
-        completedSessions: userStats.completedSessions,
-        averageScore: userStats.averageScore,
-        totalInterviewTime: userStats.totalInterviewTime
+        totalSessions: sessionStats.totalSessions || 0,
+        completedSessions: sessionStats.completedSessions || 0,
+        averageScore: sessionStats.averageScore ? Math.round(sessionStats.averageScore) : undefined,
+        totalInterviewTime: sessionStats.totalInterviewTime || 0
       });
     } catch (err) {
       console.error('Error loading stats:', err);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadSessions();
+      loadStats();
+      // Track dashboard view
+      trackDashboardViewed({ section: 'history' });
+    }
+  }, [user, loadSessions, loadStats]);
+
 
   const handleViewSession = (sessionId: string) => {
     setSelectedSessionId(sessionId);
@@ -149,7 +147,7 @@ export function SessionHistory({ onViewSession, onExportSession, onStartNewInter
     today.setHours(0, 0, 0, 0);
     
     let streak = 0;
-    let currentDate = new Date(today);
+    const currentDate = new Date(today);
     
     for (const session of sortedSessions) {
       const sessionDate = new Date(session.startedAt);
@@ -166,7 +164,7 @@ export function SessionHistory({ onViewSession, onExportSession, onStartNewInter
     return streak;
   };
 
-  const getMotivationalMessage = (stats: any, streakDays: number) => {
+  const getMotivationalMessage = (stats: { totalSessions: number; averageScore?: number; completedSessions: number }, streakDays: number) => {
     if (stats.totalSessions === 0) {
       return "Welcome! Ready to start your interview journey?";
     }
@@ -360,7 +358,7 @@ export function SessionHistory({ onViewSession, onExportSession, onStartNewInter
                 </label>
                 <select
                   value={filters.status || 'all'}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value as any })}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value as 'all' | 'completed' | 'in_progress' | 'abandoned' })}
                   className="gi-textarea w-full px-3 py-2"
                 >
                   <option value="all">All Statuses</option>
@@ -376,7 +374,7 @@ export function SessionHistory({ onViewSession, onExportSession, onStartNewInter
                 </label>
                 <select
                   value={filters.interviewType || 'all'}
-                  onChange={(e) => setFilters({ ...filters, interviewType: e.target.value as any })}
+                  onChange={(e) => setFilters({ ...filters, interviewType: e.target.value as 'all' | 'behavioral' | 'technical' | 'mixed' })}
                   className="gi-textarea w-full px-3 py-2"
                 >
                   <option value="all">All Types</option>

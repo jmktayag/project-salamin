@@ -5,9 +5,6 @@ import {
   PlayCircle, 
   Brain, 
   Mic, 
-  Volume2, 
-  TrendingUp, 
-  Users, 
   Award, 
   Star,
   ArrowRight,
@@ -137,7 +134,7 @@ export default function LandingPage({ onStartInterview, onShowDemo }: LandingPag
               Trusted by Job Seekers at Top Companies
             </h2>
             <p className="gi-body-large max-w-2xl mx-auto">
-              Join thousands of professionals who've improved their interview skills and landed their dream jobs.
+              Join thousands of professionals who&apos;ve improved their interview skills and landed their dream jobs.
             </p>
           </div>
           
@@ -170,7 +167,7 @@ export default function LandingPage({ onStartInterview, onShowDemo }: LandingPag
                 ))}
               </div>
               <p className="gi-body mb-4">
-                "Salamin helped me practice for my Google interview. The AI feedback was incredibly detailed and helped me identify areas I never knew I needed to improve."
+                &quot;Salamin helped me practice for my Google interview. The AI feedback was incredibly detailed and helped me identify areas I never knew I needed to improve.&quot;
               </p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
@@ -190,7 +187,7 @@ export default function LandingPage({ onStartInterview, onShowDemo }: LandingPag
                 ))}
               </div>
               <p className="gi-body mb-4">
-                "The speech recognition feature made practicing feel so natural. I went from nervous wreck to confident interviewee in just a few sessions."
+                &quot;The speech recognition feature made practicing feel so natural. I went from nervous wreck to confident interviewee in just a few sessions.&quot;
               </p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-success rounded-full flex items-center justify-center text-white font-semibold">
@@ -210,7 +207,7 @@ export default function LandingPage({ onStartInterview, onShowDemo }: LandingPag
                 ))}
               </div>
               <p className="gi-body mb-4">
-                "Amazing platform! The behavioral and technical question mix perfectly prepared me for my Amazon interview. Highly recommend!"
+                &quot;Amazing platform! The behavioral and technical question mix perfectly prepared me for my Amazon interview. Highly recommend!&quot;
               </p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-white font-semibold">
@@ -299,7 +296,7 @@ export default function LandingPage({ onStartInterview, onShowDemo }: LandingPag
               Your Success, Our Priority
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              We're committed to your privacy, security, and interview success.
+              We&apos;re committed to your privacy, security, and interview success.
             </p>
           </div>
           
@@ -346,7 +343,7 @@ export default function LandingPage({ onStartInterview, onShowDemo }: LandingPag
             Ready to Ace Your Next Interview?
           </h2>
           <p className="gi-body-large text-primary-100 mb-8">
-            Join thousands of successful candidates who've mastered their interview skills with Salamin.
+            Join thousands of successful candidates who&apos;ve mastered their interview skills with Salamin.
           </p>
           
           <Button

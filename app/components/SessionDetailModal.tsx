@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   X, 
   Calendar, 
@@ -34,13 +34,7 @@ export function SessionDetailModal({ sessionId, isOpen, onClose, onExport }: Ses
   const [error, setError] = useState<string | null>(null);
   const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
 
-  useEffect(() => {
-    if (isOpen && sessionId && user) {
-      loadSessionDetails();
-    }
-  }, [isOpen, sessionId, user]);
-
-  const loadSessionDetails = async () => {
+  const loadSessionDetails = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -54,7 +48,13 @@ export function SessionDetailModal({ sessionId, isOpen, onClose, onExport }: Ses
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId, user]);
+
+  useEffect(() => {
+    if (isOpen && sessionId && user) {
+      loadSessionDetails();
+    }
+  }, [isOpen, sessionId, user, loadSessionDetails]);
 
   const toggleQuestionExpansion = (index: number) => {
     setExpandedQuestions(prev => {
