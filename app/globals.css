@@ -170,14 +170,11 @@ body {
 .gi-btn-primary {
   background: linear-gradient(to right, var(--primary-teal), var(--primary-teal-dark));
   color: var(--text-white);
-  border-radius: 12px;
-  font-weight: 600;
-  transition: all 0.2s ease;
   box-shadow: var(--card-shadow);
 }
 
-.gi-btn-primary:hover {
-  background: linear-gradient(to right, var(--primary-teal-dark), rgb(15, 118, 110));
+.gi-btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
   box-shadow: var(--card-shadow-lg);
   transform: translateY(-1px);
 }
@@ -193,7 +190,6 @@ body {
   box-shadow: var(--card-shadow-lg);
   transform: translateY(-1px);
 }
-
 .gi-btn-accent {
   background: var(--accent);
   color: var(--text-primary);

@@ -64,11 +64,10 @@ export class SessionHistoryService {
       return docRef.id;
     } catch (error) {
       console.error('[SessionHistoryService] Error creating session:', error);
-      const errorDetails = error as any;
+      const errorDetails = error as Error;
       console.error('[SessionHistoryService] Error details:', {
         name: errorDetails?.name,
-        message: errorDetails?.message,
-        code: errorDetails?.code
+        message: errorDetails?.message
       });
       throw new Error(`Failed to create interview session: ${errorDetails?.message || 'Unknown error'}`);
     }

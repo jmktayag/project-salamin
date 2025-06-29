@@ -9,7 +9,11 @@ import {
   SessionAbandonedEvent,
   UserSignedInEvent,
   UserSignedUpEvent,
-  UserSignedOutEvent
+  UserSignedOutEvent,
+  DashboardViewedEvent,
+  DashboardActionEvent,
+  LandingPageViewedEvent,
+  LandingPageActionEvent
 } from './types';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -98,6 +102,38 @@ export function trackUserSignedUp(data: Omit<UserSignedUpEvent, 'event_name' | '
 export function trackUserSignedOut(data: Omit<UserSignedOutEvent, 'event_name' | 'timestamp'>): void {
   logAnalyticsEvent({
     event_name: 'user_signed_out',
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+export function trackDashboardViewed(data: Omit<DashboardViewedEvent, 'event_name' | 'timestamp'>): void {
+  logAnalyticsEvent({
+    event_name: 'dashboard_viewed',
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+export function trackDashboardAction(data: Omit<DashboardActionEvent, 'event_name' | 'timestamp'>): void {
+  logAnalyticsEvent({
+    event_name: 'dashboard_action',
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+export function trackLandingPageViewed(data: Omit<LandingPageViewedEvent, 'event_name' | 'timestamp'>): void {
+  logAnalyticsEvent({
+    event_name: 'landing_page_viewed',
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+export function trackLandingPageAction(data: Omit<LandingPageActionEvent, 'event_name' | 'timestamp'>): void {
+  logAnalyticsEvent({
+    event_name: 'landing_page_action',
     timestamp: Date.now(),
     ...data
   });

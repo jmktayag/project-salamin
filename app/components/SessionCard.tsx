@@ -14,6 +14,7 @@ import {
   Download
 } from 'lucide-react';
 import { SessionSummary } from '../types/session';
+import { trackDashboardAction } from '../lib/firebase/analytics';
 
 interface SessionCardProps {
   session: SessionSummary;
@@ -150,6 +151,7 @@ export function SessionCard({ session, onView, onDelete, onExport }: SessionCard
               {session.status === 'completed' && (
                 <button
                   onClick={() => {
+                    trackDashboardAction({ action_type: 'export_session', section: 'history' });
                     onExport(session.id);
                     setShowActions(false);
                   }}

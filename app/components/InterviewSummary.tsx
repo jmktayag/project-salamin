@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { 
   CheckCircle, 
-  AlertCircle, 
   Lightbulb, 
   Trophy,
   Star,
@@ -23,13 +22,13 @@ interface InterviewSummaryProps extends InterviewAnalysis {
 
 export function InterviewSummary({
   strengths,
-  weaknesses,
+  weaknesses: _weaknesses,
   suggestions,
   score,
   verdict,
   summary,
   onNewInterview,
-  onReviewFeedback,
+  onReviewFeedback: _onReviewFeedback,
   interviewConfig,
 }: InterviewSummaryProps) {
   const getVerdictColor = (verdict: string) => {
