@@ -5,7 +5,7 @@ import { useNavigation } from './navigation/NavigationProvider';
 
 // Question count constants
 const QUESTION_COUNT = {
-  DEVELOPMENT: 3,
+  DEVELOPMENT: 1,
   PRODUCTION: 5,
 } as const;
 
@@ -617,10 +617,10 @@ export default function InterviewOrchestrator() {
     }
 
     setIsAnalyzing(true);
+    setIsInterviewComplete(true);
     try {
       const analysis = await interviewAnalyzerRef.current.analyzeInterview(allFeedback);
       setAnalysis(analysis);
-      setIsInterviewComplete(true);
       setInterviewStep('summary');
       
       // Track session completed
@@ -955,10 +955,7 @@ export default function InterviewOrchestrator() {
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600 mx-auto mb-6"></div>
           <h2 className="gi-heading-2 mb-4">Preparing Your Interview</h2>
           <p className="gi-body mb-2">
-            {interviewConfig 
-              ? `Generating personalized questions for ${interviewConfig.position}...`
-              : 'Generating interview questions...'
-            }
+            Generating personalized questions...
           </p>
           {questionGenerationError && (
             <div className="mt-4 p-3 bg-yellow-100 border border-yellow-200 rounded-lg">
@@ -1033,9 +1030,12 @@ export default function InterviewOrchestrator() {
       <div className="space-y-6">
         
         {isAnalyzing ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4">Generating your interview analysis...</p>
+          <div className="min-h-screen gi-gradient-bg p-4 flex items-center justify-center">
+            <div className="gi-card-lg p-8 max-w-md mx-auto text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600 mx-auto mb-6"></div>
+              <h2 className="gi-heading-2 mb-4">Analyzing Your Performance</h2>
+              <p className="gi-body mb-2">Generating detailed insights and recommendations...</p>
+            </div>
           </div>
         ) : analysis ? (
           <InterviewSummary 
@@ -1274,7 +1274,7 @@ export default function InterviewOrchestrator() {
                     disabled={isAnalyzing}
                     className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
                   >
-                    {isAnalyzing ? 'Analyzing...' : 'Finish Interview'}
+                    Finish Interview
                   </button>
                 ) : (
                   <button
