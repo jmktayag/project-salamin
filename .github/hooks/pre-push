@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Pre-push hook to prevent pushing to develop and master branches
+# This provides early feedback before hitting GitHub's branch protection rules
+
+remote="$1"
+url="$2"
+
+protected_branches="develop master main"
+
+# Read the list of refs to be pushed
+while read local_ref local_sha remote_ref remote_sha
+do
+    # Extract branch name from the remote ref
+    if [[ "$remote_ref" =~ refs/heads/(.+) ]]; then
+        branch="${BASH_REMATCH[1]}"
+        
+        # Check if this is a protected branch
+        for protected in $protected_branches; do
+            if [[ "$branch" == "$protected" ]]; then
+                echo ""
+                echo "🚫 BLOCKED: Direct push to '$branch' branch is not allowed!"
+                echo ""
+                echo "   This repository has branch protection rules that require:"
+                echo "   • All changes must go through Pull Requests"
+                echo "   • No direct commits to: $protected_branches"
+                echo ""
+                echo "✅ Correct workflow:"
+                echo "   1. Create feature branch: git checkout -b feature/your-feature-name"
+                echo "   2. Make changes and commit: git add . && git commit -m 'your message'"
+                echo "   3. Push feature branch: git push -u origin feature/your-feature-name"
+                echo "   4. Create Pull Request on GitHub"
+                echo ""
+                echo "💡 Current branch: $branch"
+                echo "💡 This hook saves you from a failed push to GitHub!"
+                echo ""
+                exit 1
+            fi
+        done
+    fi
+done
+
+exit 0

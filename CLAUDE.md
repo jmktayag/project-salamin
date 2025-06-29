@@ -192,10 +192,16 @@ Uses Jest with React Testing Library for component integration testing. Tests fo
 ## Git Workflow Rules
 
 **Branch Protection:**
-- NEVER commit or push directly to the `master` branch
+- NEVER commit or push directly to the `master`, `develop`, or `main` branches
 - ALL changes must go through Pull Requests (PRs)
 - Create feature branches for all development work
 - Use descriptive branch names (e.g., `feature/add-audio-caching`, `fix/tts-error-handling`)
+
+**Git Hooks (Automatic Protection):**
+- Pre-commit and pre-push hooks prevent accidental commits to protected branches
+- Run `.github/install-hooks.sh` to install hooks after cloning the repository
+- Hooks provide clear error messages and workflow guidance
+- See `.github/BRANCH_PROTECTION.md` for complete documentation
 
 ## Key Implementation Notes
 
