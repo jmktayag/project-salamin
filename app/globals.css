@@ -425,6 +425,685 @@ body {
   color: var(--primary-teal);
 }
 
+/* Input System */
+.gi-input-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.gi-input {
+  width: 100%;
+  border: 2px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+.gi-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+.gi-input-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: var(--font-size-sm);
+}
+
+.gi-input-md {
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-base);
+}
+
+.gi-input-lg {
+  padding: 1rem 1.25rem;
+  font-size: var(--font-size-lg);
+}
+
+.gi-input-left-icon {
+  padding-left: 2.5rem;
+}
+
+.gi-input-right-icon {
+  padding-right: 2.5rem;
+}
+
+.gi-input-default {
+  border-color: var(--card-border);
+}
+
+.gi-input-error {
+  border-color: var(--error);
+}
+
+.gi-input-error:focus {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.gi-input-success {
+  border-color: var(--success);
+}
+
+.gi-input-success:focus {
+  border-color: var(--success);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.gi-input-disabled {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.gi-input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gi-input-icon-left {
+  left: 0.75rem;
+}
+
+.gi-input-icon-right {
+  right: 0.75rem;
+}
+
+.gi-input-icon-disabled {
+  opacity: 0.5;
+}
+
+.gi-input-helper {
+  margin-top: 0.5rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.gi-input-helper-error {
+  color: var(--error);
+}
+
+/* TextArea System */
+.gi-textarea {
+  width: 100%;
+  border: 2px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.gi-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+.gi-textarea-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: var(--font-size-sm);
+}
+
+.gi-textarea-md {
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-base);
+}
+
+.gi-textarea-lg {
+  padding: 1rem 1.25rem;
+  font-size: var(--font-size-lg);
+}
+
+.gi-textarea-default {
+  border-color: var(--card-border);
+}
+
+.gi-textarea-error {
+  border-color: var(--error);
+}
+
+.gi-textarea-error:focus {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.gi-textarea-success {
+  border-color: var(--success);
+}
+
+.gi-textarea-success:focus {
+  border-color: var(--success);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.gi-textarea-disabled {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.gi-textarea-auto-resize {
+  resize: none;
+  overflow: hidden;
+}
+
+.gi-textarea-with-action {
+  padding-right: 3rem;
+}
+
+.gi-textarea-action {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1;
+}
+
+/* Card System Extended */
+.gi-card-padding-sm {
+  padding: var(--spacing-sm);
+}
+
+.gi-card-padding-md {
+  padding: var(--spacing-lg);
+}
+
+.gi-card-padding-lg {
+  padding: var(--spacing-xl);
+}
+
+.gi-card-padding-xl {
+  padding: var(--spacing-2xl);
+}
+
+.gi-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+}
+
+.gi-card-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.gi-card-description {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.gi-card-content {
+  flex: 1;
+}
+
+.gi-card-footer {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-base);
+}
+
+/* Badge System */
+.gi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.gi-badge-sm {
+  padding: 0.125rem 0.5rem;
+  font-size: var(--font-size-xs);
+}
+
+.gi-badge-md {
+  padding: 0.25rem 0.75rem;
+  font-size: var(--font-size-sm);
+}
+
+.gi-badge-lg {
+  padding: 0.375rem 1rem;
+  font-size: var(--font-size-base);
+}
+
+.gi-badge-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+.gi-badge-sm .gi-badge-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.gi-badge-lg .gi-badge-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.gi-badge-text {
+  line-height: 1;
+}
+
+/* Badge Variants */
+.gi-badge-success,
+.gi-badge-completed {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border-color: var(--success-border);
+}
+
+.gi-badge-error,
+.gi-badge-abandoned {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border-color: var(--error-border);
+}
+
+.gi-badge-warning {
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+  border-color: var(--warning-border);
+}
+
+.gi-badge-info,
+.gi-badge-in_progress {
+  background-color: var(--info-bg);
+  color: var(--info-text);
+  border-color: var(--info-border);
+}
+
+.gi-badge-pending {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  border-color: var(--card-border);
+}
+
+.gi-badge-technical {
+  background-color: rgb(243, 232, 255);
+  color: rgb(107, 33, 168);
+  border-color: rgb(196, 181, 253);
+}
+
+.gi-badge-behavioral {
+  background-color: var(--info-bg);
+  color: var(--info-text);
+  border-color: var(--info-border);
+}
+
+.gi-badge-mixed {
+  background-color: rgb(255, 247, 237);
+  color: rgb(194, 120, 3);
+  border-color: rgb(254, 215, 170);
+}
+
+/* Form Field System */
+.gi-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.gi-form-field-full-width {
+  width: 100%;
+}
+
+.gi-form-field-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.gi-form-field-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.gi-form-field-label-disabled {
+  color: var(--text-muted);
+}
+
+.gi-form-field-required {
+  color: var(--error);
+  margin-left: 0.125rem;
+}
+
+.gi-form-field-control {
+  position: relative;
+}
+
+.gi-form-field-messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.gi-form-field-error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--font-size-sm);
+  color: var(--error);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.gi-form-field-error-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.gi-form-field-helper-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Feedback System */
+.gi-feedback-list {
+  background: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--card-border);
+  transition: opacity 0.3s ease;
+}
+
+.gi-feedback-list-default {
+  padding: var(--spacing-lg);
+}
+
+.gi-feedback-list-compact {
+  padding: var(--spacing-base);
+}
+
+.gi-feedback-list-bordered {
+  padding: var(--spacing-lg);
+  border: 2px solid var(--card-border);
+}
+
+.gi-feedback-list-sm {
+  font-size: var(--font-size-sm);
+}
+
+.gi-feedback-list-md {
+  font-size: var(--font-size-base);
+}
+
+.gi-feedback-list-lg {
+  font-size: var(--font-size-lg);
+}
+
+.gi-feedback-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
+  line-height: 1.4;
+}
+
+.gi-feedback-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-base);
+}
+
+.gi-feedback-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  border-left: 4px solid transparent;
+  padding-left: var(--spacing-sm);
+  transition: all 0.2s ease;
+}
+
+.gi-feedback-item-success {
+  border-left-color: var(--success);
+  color: var(--success-text);
+}
+
+.gi-feedback-item-warning {
+  border-left-color: var(--warning);
+  color: var(--warning-text);
+}
+
+.gi-feedback-item-suggestion {
+  border-left-color: var(--info);
+  color: var(--info-text);
+}
+
+.gi-feedback-icon-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.gi-feedback-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.gi-feedback-icon-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.gi-feedback-icon-lg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.gi-feedback-text {
+  font-size: inherit;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.gi-feedback-empty {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--spacing-xl);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Progress Indicator System */
+.gi-progress {
+  width: 100%;
+}
+
+.gi-progress-sm {
+  gap: var(--spacing-xs);
+}
+
+.gi-progress-md {
+  gap: var(--spacing-sm);
+}
+
+.gi-progress-lg {
+  gap: var(--spacing-base);
+}
+
+.gi-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.gi-progress-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.gi-progress-percentage {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.gi-progress-complete-icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--success);
+}
+
+.gi-progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gi-progress-sm .gi-progress-bar {
+  height: 0.375rem;
+}
+
+.gi-progress-lg .gi-progress-bar {
+  height: 0.75rem;
+}
+
+.gi-progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: inherit;
+}
+
+.gi-progress-fill-default {
+  background: linear-gradient(to right, var(--primary), var(--primary-dark));
+}
+
+.gi-progress-fill-success {
+  background: linear-gradient(to right, var(--success), var(--success-600));
+}
+
+.gi-progress-fill-warning {
+  background: linear-gradient(to right, var(--warning), var(--warning-600));
+}
+
+.gi-progress-fill-error {
+  background: linear-gradient(to right, var(--error), var(--error-600));
+}
+
+/* Progress Steps */
+.gi-progress-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+}
+
+.gi-progress-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.gi-progress-step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.gi-progress-step-completed .gi-progress-step-indicator {
+  background-color: var(--success);
+  color: white;
+}
+
+.gi-progress-step-current .gi-progress-step-indicator {
+  background-color: var(--primary);
+  color: white;
+}
+
+.gi-progress-step-pending .gi-progress-step-indicator {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--card-border);
+}
+
+.gi-progress-step-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.gi-progress-step-number {
+  line-height: 1;
+}
+
+.gi-progress-step-label {
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+.gi-progress-step-completed .gi-progress-step-label {
+  color: var(--text-secondary);
+}
+
+.gi-progress-step-current .gi-progress-step-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.gi-progress-step-pending .gi-progress-step-label {
+  color: var(--text-muted);
+}
+
 /* Responsive Typography */
 @media (min-width: 640px) {
   .gi-heading-1 {
