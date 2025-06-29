@@ -55,6 +55,32 @@ export interface UserSignedOutEvent {
   timestamp: number;
 }
 
+export interface DashboardViewedEvent {
+  event_name: 'dashboard_viewed';
+  section: 'history' | 'profile' | 'settings';
+  timestamp: number;
+}
+
+export interface DashboardActionEvent {
+  event_name: 'dashboard_action';
+  action_type: 'start_interview' | 'view_session' | 'export_session' | 'delete_session' | 'refresh_data';
+  section: 'history' | 'welcome';
+  timestamp: number;
+}
+
+export interface LandingPageViewedEvent {
+  event_name: 'landing_page_viewed';
+  user_type: 'authenticated' | 'anonymous';
+  timestamp: number;
+}
+
+export interface LandingPageActionEvent {
+  event_name: 'landing_page_action';
+  action_type: 'start_interview_cta' | 'watch_demo' | 'scroll_features' | 'scroll_testimonials';
+  section: 'hero' | 'social_proof' | 'features' | 'trust' | 'final_cta';
+  timestamp: number;
+}
+
 export type AnalyticsEvent = 
   | SessionStartedEvent
   | QuestionAnsweredEvent
@@ -63,7 +89,11 @@ export type AnalyticsEvent =
   | SessionAbandonedEvent
   | UserSignedInEvent
   | UserSignedUpEvent
-  | UserSignedOutEvent;
+  | UserSignedOutEvent
+  | DashboardViewedEvent
+  | DashboardActionEvent
+  | LandingPageViewedEvent
+  | LandingPageActionEvent;
 
 export interface AnalyticsContext {
   isEnabled: boolean;

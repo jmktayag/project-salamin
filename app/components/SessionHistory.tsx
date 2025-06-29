@@ -9,20 +9,27 @@ import {
   Calendar,
   TrendingUp,
   Clock,
-  Award
+  Award,
+  PlayCircle,
+  Zap,
+  Target,
+  Star
 } from 'lucide-react';
 import { SessionCard } from './SessionCard';
 import { SessionDetailModal } from './SessionDetailModal';
 import { SessionHistoryService } from '../utils/SessionHistoryService';
 import { SessionSummary, SessionFilters } from '../types/session';
 import { useAuth } from '../hooks/useAuth';
+import { trackDashboardViewed, trackDashboardAction } from '../lib/firebase/analytics';
+import { Button } from './ui/Button';
 
 interface SessionHistoryProps {
   onViewSession: (sessionId: string) => void;
   onExportSession: (sessionId: string) => void;
+  onStartNewInterview?: () => void;
 }
 
-export function SessionHistory({ onViewSession, onExportSession }: SessionHistoryProps) {
+export function SessionHistory({ onViewSession, onExportSession, onStartNewInterview }: SessionHistoryProps) {
   const { user } = useAuth();
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +52,8 @@ export function SessionHistory({ onViewSession, onExportSession }: SessionHistor
     if (user) {
       loadSessions();
       loadStats();
+      // Track dashboard view
+      trackDashboardViewed({ section: 'history' });
     }
   }, [user, filters]);
 
@@ -91,6 +100,7 @@ export function SessionHistory({ onViewSession, onExportSession }: SessionHistor
 
   const handleViewSession = (sessionId: string) => {
     setSelectedSessionId(sessionId);
+    trackDashboardAction({ action_type: 'view_session', section: 'history' });
     onViewSession(sessionId);
   };
 
@@ -102,6 +112,7 @@ export function SessionHistory({ onViewSession, onExportSession }: SessionHistor
         await SessionHistoryService.deleteSession(sessionId, user.uid);
         setSessions(sessions.filter(s => s.id !== sessionId));
         loadStats(); // Refresh stats
+        trackDashboardAction({ action_type: 'delete_session', section: 'history' });
       } catch (err) {
         console.error('Error deleting session:', err);
         setError('Failed to delete session');
@@ -112,6 +123,7 @@ export function SessionHistory({ onViewSession, onExportSession }: SessionHistor
   const handleRefresh = () => {
     loadSessions();
     loadStats();
+    trackDashboardAction({ action_type: 'refresh_data', section: 'history' });
   };
 
   const formatTime = (seconds: number) => {
@@ -123,6 +135,63 @@ export function SessionHistory({ onViewSession, onExportSession }: SessionHistor
     }
     return `${minutes}m`;
   };
+
+  const calculateStreakDays = (sessions: SessionSummary[]) => {
+    if (sessions.length === 0) return 0;
+    
+    const sortedSessions = [...sessions]
+      .filter(s => s.status === 'completed')
+      .sort((a, b) => b.startedAt - a.startedAt);
+    
+    if (sortedSessions.length === 0) return 0;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let streak = 0;
+    let currentDate = new Date(today);
+    
+    for (const session of sortedSessions) {
+      const sessionDate = new Date(session.startedAt);
+      sessionDate.setHours(0, 0, 0, 0);
+      
+      if (sessionDate.getTime() === currentDate.getTime()) {
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else if (sessionDate.getTime() < currentDate.getTime()) {
+        break;
+      }
+    }
+    
+    return streak;
+  };
+
+  const getMotivationalMessage = (stats: any, streakDays: number) => {
+    if (stats.totalSessions === 0) {
+      return "Welcome! Ready to start your interview journey?";
+    }
+    
+    if (streakDays >= 7) {
+      return `🔥 Amazing ${streakDays}-day streak! You're on fire!`;
+    }
+    
+    if (streakDays >= 3) {
+      return `⭐ Great momentum with ${streakDays} days in a row!`;
+    }
+    
+    if (stats.averageScore && stats.averageScore >= 80) {
+      return `🎯 Excellent performance! Average score: ${stats.averageScore}%`;
+    }
+    
+    if (stats.completedSessions >= 5) {
+      return `💪 ${stats.completedSessions} interviews completed - you're building expertise!`;
+    }
+    
+    return "Keep practicing to improve your interview skills!";
+  };
+
+  const streakDays = calculateStreakDays(sessions);
+  const motivationalMessage = getMotivationalMessage(stats, streakDays);
 
   const filteredSessions = sessions.filter(session => {
     if (searchTerm) {
@@ -147,115 +216,152 @@ export function SessionHistory({ onViewSession, onExportSession }: SessionHistor
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
+      {/* Welcome Section */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Interview History</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Review your past interview sessions and track your progress
-            </p>
+        <div className="gi-card-elevated bg-gradient-to-r from-primary to-secondary p-6 text-white mb-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div className="flex-1">
+              <h1 className="gi-heading-2 text-white mb-2">
+                Welcome back, {user.displayName || 'Interviewer'}! 👋
+              </h1>
+              <p className="gi-body text-primary-100 mb-4 md:mb-0">
+                {motivationalMessage}
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              {onStartNewInterview && (
+                <Button
+                  onClick={() => {
+                    trackDashboardAction({ action_type: 'start_interview', section: 'welcome' });
+                    onStartNewInterview();
+                  }}
+                  variant="accent"
+                  size="md"
+                  className="w-full sm:w-auto"
+                >
+                  <PlayCircle className="w-5 h-5" />
+                  Start New Interview
+                </Button>
+              )}
+              
+              <Button
+                onClick={handleRefresh}
+                variant="ghost"
+                size="md"
+                disabled={loading}
+                className="w-full sm:w-auto bg-primary-500 bg-opacity-20 text-white hover:bg-opacity-30 border-transparent"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
-          
-          <button
-            onClick={handleRefresh}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            disabled={loading}
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+        {/* Quick Stats Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="gi-card p-4">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-md">
-                <Calendar className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-accent-light rounded-md">
+                <Star className="w-5 h-5 text-accent-dark" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Sessions</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalSessions}</p>
+                <p className="gi-label text-text-muted">Streak</p>
+                <p className="gi-heading-3">{streakDays} days</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="gi-card p-4">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-md">
-                <TrendingUp className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-success-50 rounded-md">
+                <Target className="w-5 h-5 text-success" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Completed</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.completedSessions}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-md">
-                <Award className="w-5 h-5 text-purple-600" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Avg Score</p>
-                <p className="text-2xl font-semibold text-gray-900">
+                <p className="gi-label text-text-muted">Avg Score</p>
+                <p className="gi-heading-3">
                   {stats.averageScore ? `${stats.averageScore}%` : 'N/A'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="gi-card p-4">
             <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-md">
-                <Clock className="w-5 h-5 text-orange-600" />
+              <div className="p-2 bg-primary-100 rounded-md">
+                <Calendar className="w-5 h-5 text-primary" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Time</p>
-                <p className="text-2xl font-semibold text-gray-900">
+                <p className="gi-label text-text-muted">Sessions</p>
+                <p className="gi-heading-3">{stats.totalSessions}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="gi-card p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-warning-50 rounded-md">
+                <Clock className="w-5 h-5 text-warning" />
+              </div>
+              <div className="ml-3">
+                <p className="gi-label text-text-muted">Time</p>
+                <p className="gi-heading-3">
                   {formatTime(stats.totalInterviewTime)}
                 </p>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="gi-heading-2">Your Interview History</h2>
+            <p className="gi-body-small mt-1">
+              Review your past interview sessions and track your progress
+            </p>
+          </div>
+        </div>
+
 
         {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
             <input
               type="text"
               placeholder="Search by position..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="gi-textarea w-full pl-10 pr-4 py-2"
             />
           </div>
           
-          <button
+          <Button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            variant="outline"
+            size="md"
           >
             <Filter className="w-4 h-4" />
             Filters
-          </button>
+          </Button>
         </div>
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+          <div className="gi-card p-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="gi-label block mb-2">
                   Status
                 </label>
                 <select
                   value={filters.status || 'all'}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="gi-textarea w-full px-3 py-2"
                 >
                   <option value="all">All Statuses</option>
                   <option value="completed">Completed</option>
@@ -265,13 +371,13 @@ export function SessionHistory({ onViewSession, onExportSession }: SessionHistor
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="gi-label block mb-2">
                   Interview Type
                 </label>
                 <select
                   value={filters.interviewType || 'all'}
                   onChange={(e) => setFilters({ ...filters, interviewType: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="gi-textarea w-full px-3 py-2"
                 >
                   <option value="all">All Types</option>
                   <option value="behavioral">Behavioral</option>
@@ -286,8 +392,8 @@ export function SessionHistory({ onViewSession, onExportSession }: SessionHistor
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="gi-card gi-status-error mb-6 p-4">
+          <p className="gi-body-small">{error}</p>
         </div>
       )}
 

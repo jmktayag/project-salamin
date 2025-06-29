@@ -27,6 +27,7 @@ import { QuestionGenerator } from '../utils/QuestionGenerator';
 import { InterviewSummary } from './InterviewSummary';
 import { SessionHistory } from './SessionHistory';
 import { SessionHistoryService } from '../utils/SessionHistoryService';
+import LandingPage from './LandingPage';
 import { SessionExportService } from '../utils/SessionExportService';
 import { FirestoreConnectionTest } from '../utils/FirestoreConnectionTest';
 import { useAuth } from '../hooks/useAuth';
@@ -929,6 +930,16 @@ export default function InterviewOrchestrator() {
       <SessionHistory
         onViewSession={handleViewSession}
         onExportSession={handleExportSession}
+        onStartNewInterview={handleShowConfiguration}
+      />
+    );
+  }
+
+  // Landing Page View (for home)
+  if (currentPage === 'home' && !showConfiguration && !isInterviewStarted) {
+    return (
+      <LandingPage
+        onStartInterview={handleShowConfiguration}
       />
     );
   }
