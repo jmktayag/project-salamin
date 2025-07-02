@@ -223,20 +223,109 @@ body {
   color: var(--text-primary);
 }
 
+/* Button Variants */
+.gi-btn-danger {
+  background: var(--error);
+  color: var(--text-white);
+  box-shadow: var(--card-shadow);
+}
+
+.gi-btn-danger:hover:not(:disabled) {
+  background: var(--error-600);
+  box-shadow: var(--card-shadow-lg);
+  transform: translateY(-1px);
+}
+
+/* Button States */
+.gi-btn-success {
+  background: var(--success);
+  color: var(--text-white);
+  box-shadow: var(--card-shadow);
+}
+
+.gi-btn-success:hover:not(:disabled) {
+  background: var(--success-600);
+  box-shadow: var(--card-shadow-lg);
+  transform: translateY(-1px);
+}
+
+.gi-btn-error {
+  background: var(--error);
+  color: var(--text-white);
+  box-shadow: var(--card-shadow);
+}
+
+.gi-btn-error:hover:not(:disabled) {
+  background: var(--error-600);
+  box-shadow: var(--card-shadow-lg);
+  transform: translateY(-1px);
+}
+
+/* Button Modifiers */
+.gi-btn-floating {
+  position: fixed;
+  z-index: 50;
+  border-radius: 50%;
+  box-shadow: var(--card-shadow-lg);
+  transition: all 0.3s ease;
+}
+
+.gi-btn-floating:hover:not(:disabled) {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.gi-btn-icon-only {
+  aspect-ratio: 1;
+  padding: 0.75rem;
+  justify-content: center;
+}
+
+.gi-btn-icon-only.gi-btn-sm {
+  padding: 0.5rem;
+}
+
+.gi-btn-icon-only.gi-btn-xs {
+  padding: 0.375rem;
+}
+
+.gi-btn-icon-only.gi-btn-lg {
+  padding: 1rem;
+}
+
+.gi-btn-icon-only.gi-btn-xl {
+  padding: 1.25rem;
+}
+
 /* Button Sizes */
+.gi-btn-xs {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--font-size-xs);
+  min-height: 2rem;
+}
+
 .gi-btn-sm {
   padding: 0.5rem 1rem;
   font-size: var(--font-size-sm);
+  min-height: 2.5rem;
 }
 
 .gi-btn-md {
   padding: 0.75rem 1.5rem;
   font-size: var(--font-size-base);
+  min-height: 2.75rem;
 }
 
 .gi-btn-lg {
   padding: 1rem 2rem;
   font-size: var(--font-size-lg);
+  min-height: 3rem;
+}
+
+.gi-btn-xl {
+  padding: 1.25rem 2.5rem;
+  font-size: var(--font-size-xl);
+  min-height: 3.5rem;
 }
 
 .gi-text-primary {

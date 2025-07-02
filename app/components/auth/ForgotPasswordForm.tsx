@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { SubmitButton, Button } from '../ui';
 
 interface ForgotPasswordFormProps {
   onBackToSignIn?: () => void;
@@ -65,13 +66,16 @@ export default function ForgotPasswordForm({ onBackToSignIn }: ForgotPasswordFor
         </div>
 
         {onBackToSignIn && (
-          <button
+          <Button
             onClick={onBackToSignIn}
-            className="mt-6 flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+            variant="outline"
+            size="md"
+            fullWidth
+            className="mt-6"
+            icon={<ArrowLeft className="w-4 h-4" />}
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to sign in
-          </button>
+          </Button>
         )}
       </div>
     );
@@ -116,24 +120,28 @@ export default function ForgotPasswordForm({ onBackToSignIn }: ForgotPasswordFor
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full gi-btn-primary py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Sending...' : 'Send Reset Link'}
-        </button>
+        <SubmitButton
+          isSubmitting={loading}
+          submitText="Send Reset Link"
+          submittingText="Sending..."
+          fullWidth
+          variant="primary"
+          size="md"
+        />
       </form>
 
       {onBackToSignIn && (
-        <button
+        <Button
           onClick={onBackToSignIn}
-          className="mt-6 flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
+          variant="ghost"
+          size="md"
+          fullWidth
+          className="mt-6"
           disabled={loading}
+          icon={<ArrowLeft className="w-4 h-4" />}
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
           Back to sign in
-        </button>
+        </Button>
       )}
     </div>
   );
