@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, HelpCircle } from 'lu
 import { InterviewConfiguration as IInterviewConfiguration, InterviewType, INTERVIEW_TYPE_OPTIONS } from '../types/interview';
 import AutocompleteInput from './AutocompleteInput';
 import { JOB_POSITIONS } from '../data/jobPositions';
-import { Button, SubmitButton } from './ui';
+import { Button, ActionButton } from './ui';
 
 interface InterviewConfigurationProps {
   onStartInterview: (config: IInterviewConfiguration) => void;
@@ -209,10 +209,9 @@ export default function InterviewConfiguration({
                 Back
               </Button>
 
-              <SubmitButton
+              <ActionButton
+                action="start"
                 disabled={!isFormValid}
-                submitText="Start Interview"
-                variant="primary"
                 size="lg"
                 icon={<ArrowRight className="w-4 h-4" />}
                 iconPosition="right"

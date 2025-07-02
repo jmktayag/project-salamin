@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { SubmitButton, Button } from '../ui';
+import { ActionButton, Button } from '../ui';
 
 interface ForgotPasswordFormProps {
   onBackToSignIn?: () => void;
@@ -120,12 +120,10 @@ export default function ForgotPasswordForm({ onBackToSignIn }: ForgotPasswordFor
           )}
         </div>
 
-        <SubmitButton
-          isSubmitting={loading}
-          submitText="Send Reset Link"
-          submittingText="Sending..."
+        <ActionButton
+          action="reset"
+          isLoading={loading}
           fullWidth
-          variant="primary"
           size="md"
         />
       </form>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ActionButton } from '../ui';
 
 interface InterviewActionsProps {
   hasAnswerSubmitted: boolean;
@@ -24,30 +25,27 @@ export function InterviewActions({
   return (
     <div className="mt-6 flex items-center justify-end gap-4">
       {!hasAnswerSubmitted ? (
-        <button
+        <ActionButton
+          action="submit"
           onClick={onSubmit}
-          disabled={isSubmitting}
-          className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit Answer'}
-        </button>
+          isLoading={isSubmitting}
+          size="lg"
+        />
       ) : (
         <>
           {isLastQuestion ? (
-            <button
+            <ActionButton
+              action="finish"
               onClick={onFinish}
-              disabled={isAnalyzing}
-              className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
-            >
-              {isAnalyzing ? 'Analyzing...' : 'Finish Interview'}
-            </button>
+              isLoading={isAnalyzing}
+              size="lg"
+            />
           ) : (
-            <button
+            <ActionButton
+              action="next"
               onClick={onNext}
-              className="gi-btn-primary inline-flex items-center justify-center px-6 py-3 focus:ring-2 focus:ring-teal-500 focus:outline-none"
-            >
-              Next Question
-            </button>
+              size="lg"
+            />
           )}
         </>
       )}

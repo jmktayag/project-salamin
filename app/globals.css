@@ -223,7 +223,35 @@ body {
   color: var(--text-primary);
 }
 
-/* Button Variants */
+/* Interview-Style Button Variant - Matches active interview question button */
+.gi-btn-interview {
+  background: rgb(13, 148, 136); /* bg-teal-500 */
+  color: white;
+  border: 2px solid rgb(13, 148, 136); /* border-teal-500 */
+  box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.3);
+  transition: all 0.5s ease;
+}
+
+.gi-btn-interview:hover:not(:disabled) {
+  background: rgb(15, 118, 110); /* hover:bg-teal-600 */
+  color: white;
+  border-color: rgb(15, 118, 110);
+  box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.3);
+}
+
+.gi-btn-interview:active:not(:disabled) {
+  background: rgb(12, 74, 110); /* darker teal for active */
+  color: white;
+  border-color: rgb(12, 74, 110);
+  box-shadow: 0 5px 15px -3px rgba(13, 148, 136, 0.4);
+  transform: translateY(0.5px);
+}
+
+.gi-btn-interview:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
+
 .gi-btn-danger {
   background: var(--error);
   color: var(--text-white);

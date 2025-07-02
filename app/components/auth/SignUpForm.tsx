@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { SignUpFormData } from '../../lib/firebase/auth-types';
-import { SubmitButton, IconButton, Button } from '../ui';
+import { ActionButton, IconButton, Button } from '../ui';
 
 interface SignUpFormProps {
   onSuccess?: () => void;
@@ -210,12 +210,10 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
           )}
         </div>
 
-        <SubmitButton
-          isSubmitting={loading}
-          submitText="Create Account"
-          submittingText="Creating account..."
+        <ActionButton
+          action="signup"
+          isLoading={loading}
           fullWidth
-          variant="primary"
           size="md"
         />
       </form>
