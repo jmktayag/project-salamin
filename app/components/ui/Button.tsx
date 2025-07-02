@@ -4,7 +4,7 @@ import React from 'react';
 import { cn } from '../../utils/cn';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'danger' | 'soft' | 'interview';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   state?: 'default' | 'loading' | 'success' | 'error';
   loading?: boolean; // Deprecated: use state="loading" instead
@@ -162,6 +162,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           variant === 'secondary' && 'focus:ring-blue-500',
           variant === 'accent' && 'focus:ring-amber-500',
           variant === 'danger' && 'focus:ring-red-500',
+          variant === 'soft' && 'focus:ring-teal-500',
+          variant === 'interview' && 'focus:ring-teal-500',
           className
         )}
         ref={ref}

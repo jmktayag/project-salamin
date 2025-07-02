@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { InterviewActionButton } from '../ui';
+import { ActionButton } from '../ui';
 
 interface InterviewActionsProps {
   hasAnswerSubmitted: boolean;
@@ -25,23 +25,26 @@ export function InterviewActions({
   return (
     <div className="mt-6 flex items-center justify-end gap-4">
       {!hasAnswerSubmitted ? (
-        <InterviewActionButton
+        <ActionButton
           action="submit"
           onClick={onSubmit}
           isLoading={isSubmitting}
+          size="lg"
         />
       ) : (
         <>
           {isLastQuestion ? (
-            <InterviewActionButton
+            <ActionButton
               action="finish"
               onClick={onFinish}
               isLoading={isAnalyzing}
+              size="lg"
             />
           ) : (
-            <InterviewActionButton
+            <ActionButton
               action="next"
               onClick={onNext}
+              size="lg"
             />
           )}
         </>

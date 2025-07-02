@@ -12,8 +12,8 @@ export type { IconButtonProps } from './IconButton';
 export { SubmitButton } from './SubmitButton';
 export type { SubmitButtonProps } from './SubmitButton';
 
-export { InterviewActionButton } from './InterviewActionButton';
-export type { InterviewActionButtonProps } from './InterviewActionButton';
+export { ActionButton } from './ActionButton';
+export type { ActionButtonProps } from './ActionButton';
 
 export { VoiceButton } from './VoiceButton';
 export type { VoiceButtonProps } from './VoiceButton';
