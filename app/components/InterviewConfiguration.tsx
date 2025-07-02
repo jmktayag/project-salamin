@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, HelpCircle } from 'lu
 import { InterviewConfiguration as IInterviewConfiguration, InterviewType, INTERVIEW_TYPE_OPTIONS } from '../types/interview';
 import AutocompleteInput from './AutocompleteInput';
 import { JOB_POSITIONS } from '../data/jobPositions';
+import { Button, SubmitButton } from './ui';
 
 interface InterviewConfigurationProps {
   onStartInterview: (config: IInterviewConfiguration) => void;
@@ -197,27 +198,25 @@ export default function InterviewConfiguration({
 
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-              <button
+              <Button
                 type="button"
                 onClick={onBack}
-                className="inline-flex items-center px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-400 focus:outline-none transition-colors"
+                variant="outline"
+                size="lg"
+                icon={<ArrowLeft className="w-4 h-4" />}
+                iconPosition="left"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
-              </button>
+              </Button>
 
-              <button
-                type="submit"
+              <SubmitButton
                 disabled={!isFormValid}
-                className={`inline-flex items-center px-8 py-3 rounded-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
-                  isFormValid
-                    ? 'text-white bg-teal-600 hover:bg-teal-700'
-                    : 'bg-gray-400 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Start Interview
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
+                submitText="Start Interview"
+                variant="primary"
+                size="lg"
+                icon={<ArrowRight className="w-4 h-4" />}
+                iconPosition="right"
+              />
             </div>
           </form>
         </div>

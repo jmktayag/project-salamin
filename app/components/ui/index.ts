@@ -2,6 +2,19 @@
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
 
+// Specialized Button Components
+export { FloatingActionButton } from './FloatingActionButton';
+export type { FloatingActionButtonProps } from './FloatingActionButton';
+
+export { IconButton } from './IconButton';
+export type { IconButtonProps } from './IconButton';
+
+export { SubmitButton } from './SubmitButton';
+export type { SubmitButtonProps } from './SubmitButton';
+
+export { VoiceButton } from './VoiceButton';
+export type { VoiceButtonProps } from './VoiceButton';
+
 export { Input } from './Input';
 export type { InputProps } from './Input';
 
