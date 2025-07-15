@@ -24,10 +24,8 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       if (user) {
         // Authenticated users default to dashboard (history page)
         setCurrentPage('history');
-      } else {
-        // Unauthenticated users stay on home page (landing page)
-        setCurrentPage('home');
       }
+      // Unauthenticated users stay on home page (no action needed)
     }
   }, [user, loading, currentPage, interviewStarted]);
 
