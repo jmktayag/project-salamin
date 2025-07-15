@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { NavigationContextType, NavigationPage, InterviewStep } from './types';
+import { useAuth } from '../AuthProvider';
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
@@ -10,10 +11,25 @@ interface NavigationProviderProps {
 }
 
 export function NavigationProvider({ children }: NavigationProviderProps) {
+  const { user, loading } = useAuth();
   const [currentPage, setCurrentPage] = useState<NavigationPage>('home');
   const [interviewStep, setInterviewStep] = useState<InterviewStep>('configuration');
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [resetToHomeCallback, setResetToHomeCallback] = useState<(() => void) | null>(null);
+
+  // Set default page based on authentication state
+  useEffect(() => {
+    // Only update the page if auth loading is complete and we're on the home page
+    if (!loading && currentPage === 'home' && !interviewStarted) {
+      if (user) {
+        // Authenticated users default to dashboard (history page)
+        setCurrentPage('history');
+      } else {
+        // Unauthenticated users stay on home page (landing page)
+        setCurrentPage('home');
+      }
+    }
+  }, [user, loading, currentPage, interviewStarted]);
 
   // Scroll to top when interview step changes
   useEffect(() => {
