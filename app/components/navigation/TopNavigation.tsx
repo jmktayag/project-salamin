@@ -50,6 +50,7 @@ export default function TopNavigation() {
     try {
       await signOut();
       setIsUserMenuOpen(false);
+      setCurrentPage('home');
     } catch (error) {
       console.error('Sign out error:', error);
     }
