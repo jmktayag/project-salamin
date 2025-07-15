@@ -928,14 +928,8 @@ export default function InterviewOrchestrator() {
     );
   }
 
-  // Landing Page View (for home) - redirect authenticated users to dashboard
+  // Landing Page View (for home)
   if (currentPage === 'home' && !showConfiguration && !isInterviewStarted) {
-    // If user is authenticated, redirect to dashboard
-    if (user) {
-      setCurrentPage('history');
-      return null; // Prevent flash of landing page
-    }
-    
     return (
       <LandingPage
         onStartInterview={handleShowConfiguration}

@@ -41,6 +41,12 @@ jest.mock('next/image', () => {
   };
 });
 
+// Mock window.scrollTo to avoid jsdom errors
+Object.defineProperty(window, 'scrollTo', {
+  value: jest.fn(),
+  writable: true
+});
+
 // Helper function to render TopNavigation with NavigationProvider
 const renderWithProviders = (initialUser = null) => {
   mockUseAuth.user = initialUser;
@@ -224,12 +230,18 @@ describe('TopNavigation', () => {
       consoleSpy.mockRestore();
     });
 
-    it('should not allow sign out when loading state is true', () => {
+    it('should not allow sign out when loading state is true', async () => {
+      const user = userEvent.setup();
       mockUseAuth.loading = true;
       renderWithProviders(mockUser);
       
-      const signOutButton = screen.getByText('Sign out');
-      expect(signOutButton).toBeDisabled();
+      // Find the actual button element (parent of the text span)
+      const userMenuButton = screen.getByText('John Doe').closest('button');
+      expect(userMenuButton).toBeDisabled();
+      
+      // Try to click it anyway - it shouldn't open
+      await user.click(userMenuButton!);
+      expect(screen.queryByText('Sign out')).not.toBeInTheDocument();
     });
   });
 
@@ -287,7 +299,8 @@ describe('TopNavigation', () => {
       mockUseAuth.loading = true;
       renderWithProviders(mockUser);
       
-      const userMenuButton = screen.getByText('John Doe');
+      // Find the actual button element (parent of the text span)
+      const userMenuButton = screen.getByText('John Doe').closest('button');
       expect(userMenuButton).toBeDisabled();
     });
   });
@@ -308,11 +321,15 @@ describe('TopNavigation', () => {
       
       renderWithProviders(mockUser);
       
-      const userMenuButton = screen.getByText('John Doe');
+      // Find the actual button element (parent of the text span)
+      const userMenuButton = screen.getByText('John Doe').closest('button');
       
       // Focus on user menu button
-      userMenuButton.focus();
+      userMenuButton!.focus();
       expect(userMenuButton).toHaveFocus();
+      
+      // Test that it's not disabled for accessibility
+      expect(userMenuButton).not.toBeDisabled();
     });
   });
 });
