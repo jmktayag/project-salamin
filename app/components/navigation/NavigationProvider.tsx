@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, ReactNode } from 'react';
 import { NavigationContextType, NavigationPage, InterviewStep } from './types';
 import { useAuth } from '../AuthProvider';
 
@@ -15,7 +15,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   const [currentPage, setCurrentPage] = useState<NavigationPage>('home');
   const [interviewStep, setInterviewStep] = useState<InterviewStep>('configuration');
   const [interviewStarted, setInterviewStarted] = useState(false);
-  const [resetToHomeCallback, setResetToHomeCallback] = useState<(() => void) | null>(null);
+  const resetToHomeCallbackRef = useRef<(() => void) | null>(null);
 
   // Set default page based on authentication state
   useEffect(() => {
@@ -54,18 +54,18 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   }, []);
 
   const registerResetToHome = useCallback((callback: () => void) => {
-    setResetToHomeCallback(() => callback);
+    resetToHomeCallbackRef.current = callback;
   }, []);
 
   const resetToHome = useCallback(() => {
-    if (resetToHomeCallback) {
-      resetToHomeCallback();
+    if (resetToHomeCallbackRef.current) {
+      resetToHomeCallbackRef.current();
     } else {
       resetNavigation();
     }
-  }, [resetToHomeCallback, resetNavigation]);
+  }, [resetNavigation]);
 
-  const contextValue: NavigationContextType = {
+  const contextValue: NavigationContextType = useMemo(() => ({
     currentPage,
     interviewStep,
     interviewStarted,
@@ -75,7 +75,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     resetNavigation,
     resetToHome,
     registerResetToHome,
-  };
+  }), [currentPage, interviewStep, interviewStarted, setCurrentPage, setInterviewStep, setInterviewStarted, resetNavigation, resetToHome, registerResetToHome]);
 
   return (
     <NavigationContext.Provider value={contextValue}>

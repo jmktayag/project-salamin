@@ -696,7 +696,7 @@ export default function InterviewOrchestrator() {
   // Register reset to home function with navigation
   React.useEffect(() => {
     registerResetToHome(handleRestartInterview);
-  }, [registerResetToHome, handleRestartInterview]);
+  }, [registerResetToHome]);
 
   /**
    * Handler for viewing session details
