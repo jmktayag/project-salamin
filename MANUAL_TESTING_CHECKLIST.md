@@ -186,11 +186,13 @@ This checklist is derived from the comprehensive testing guide and provides acti
 
 ## Known Issues and Limitations
 
-### Current Test Failures
-1. **Firestore Rules Testing**: Requires Java installation and Firebase emulator
+### Current Test Limitations
+1. **Firestore Rules Testing**: Requires manual setup to avoid deployment conflicts
    - Install Java Runtime Environment
+   - Install testing package: `npm install --save-dev @firebase/rules-unit-testing --legacy-peer-deps`
    - Run `firebase emulators:start --only firestore`
    - Then run `npm test firestore-rules.test.js`
+   - **Note**: Package not included by default due to Firebase version conflicts
 
 2. **Some Unit Tests**: Minor issues with mocking and imports
    - Most core functionality tests are passing

@@ -314,15 +314,24 @@ Test in each of the following:
 
 ## 6. Database Testing with Firebase Emulator
 
-### Setup Firebase Emulator
+### Setup Firebase Emulator (Manual Setup Required)
+
+**Note**: Firestore rules testing requires manual setup to avoid deployment dependency conflicts.
+
 ```bash
-# Install Firebase CLI
+# 1. Install Java Runtime (required for Firebase emulator)
+# Download from: https://www.java.com/download/
+
+# 2. Install Firebase CLI
 npm install -g firebase-tools
 
-# Initialize Firebase project (if not done)
+# 3. Initialize Firebase project (if not done)
 firebase init firestore
 
-# Start emulator
+# 4. Install Firebase rules testing package (manual step)
+npm install --save-dev @firebase/rules-unit-testing --legacy-peer-deps
+
+# 5. Start emulator
 firebase emulators:start --only firestore
 ```
 
@@ -331,11 +340,13 @@ firebase emulators:start --only firestore
 2. Test profile migration scripts
 3. Verify data integrity
 
-### Test Security Rules
+### Test Security Rules (Manual Setup Required)
 ```bash
-# Run security rules tests
+# Run security rules tests (requires manual setup above)
 npm test firestore-rules.test.js
 ```
+
+**Important**: The `@firebase/rules-unit-testing` package is not installed by default because it requires Firebase v12, while this project uses Firebase v11. This prevents deployment conflicts. Install it manually when you need to test Firestore security rules.
 
 ---
 
