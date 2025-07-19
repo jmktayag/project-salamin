@@ -1,4 +1,5 @@
 import { User as FirebaseUser } from 'firebase/auth';
+import { UserProfile, UserPreferences } from '@/app/types/user';
 
 export interface AuthUser extends FirebaseUser {
   displayName: string | null;
@@ -8,7 +9,10 @@ export interface AuthUser extends FirebaseUser {
 
 export interface AuthContextType {
   user: AuthUser | null;
+  profile: UserProfile | null;
+  preferences: UserPreferences | null;
   loading: boolean;
+  profileLoading: boolean;
   error: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName?: string) => Promise<void>;
@@ -16,6 +20,11 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   clearError: () => void;
+  // Profile management methods
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updatePreferences: (updates: Partial<UserPreferences>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
+  isProfileComplete: () => boolean;
 }
 
 export interface AuthProviderProps {
