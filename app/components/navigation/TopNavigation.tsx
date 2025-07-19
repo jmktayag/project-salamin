@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { BookOpen, User, LogOut, ChevronDown, History } from 'lucide-react';
+import { BookOpen, User, LogOut, ChevronDown, History, Settings } from 'lucide-react';
 import { useNavigation } from './NavigationProvider';
 import { useAuth } from '../../hooks/useAuth';
 import AuthModal from '../auth/AuthModal';
@@ -62,6 +62,11 @@ export default function TopNavigation() {
 
   const handleHistoryClick = () => {
     setCurrentPage('history');
+    setIsUserMenuOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    setCurrentPage('profile');
     setIsUserMenuOpen(false);
   };
 
@@ -130,6 +135,13 @@ export default function TopNavigation() {
                       >
                         <History className="w-4 h-4 mr-2" />
                         Interview History
+                      </button>
+                      <button
+                        onClick={handleProfileClick}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Profile Settings
                       </button>
                       <button
                         onClick={handleSignOut}

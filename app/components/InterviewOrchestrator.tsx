@@ -28,6 +28,7 @@ import { InterviewSummary } from './InterviewSummary';
 import { SessionHistory } from './SessionHistory';
 import { SessionHistoryService } from '../utils/SessionHistoryService';
 import LandingPage from './LandingPage';
+import ProfilePage from './ProfilePage';
 import { SessionExportService } from '../utils/SessionExportService';
 import { FirestoreConnectionTest } from '../utils/FirestoreConnectionTest';
 import { useAuth } from '../hooks/useAuth';
@@ -926,6 +927,11 @@ export default function InterviewOrchestrator() {
         onStartNewInterview={handleShowConfiguration}
       />
     );
+  }
+
+  // Profile Page View
+  if (currentPage === 'profile') {
+    return <ProfilePage />;
   }
 
   // Landing Page View (for home)
