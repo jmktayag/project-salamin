@@ -73,8 +73,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         profileService.getUserPreferences(uid)
       ]);
       
-      setProfile(userProfile);
-      setPreferences(userPreferences);
+      // Check if component is still mounted and user hasn't changed
+      if (auth.currentUser?.uid === uid) {
+        setProfile(userProfile);
+        setPreferences(userPreferences);
+      }
     } catch (error) {
       console.error('Error loading user profile:', error);
       setError('Failed to load user profile');

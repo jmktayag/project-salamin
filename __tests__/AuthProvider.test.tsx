@@ -465,7 +465,9 @@ describe('AuthProvider', () => {
     it('should clear user and profile data on sign out', async () => {
       // First authenticate user
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
-        if (typeof callback === 'function') {\n          callback(mockUser as any);\n        }
+        if (typeof callback === 'function') {
+          callback(mockUser as any);
+        }
         return jest.fn();
       });
 

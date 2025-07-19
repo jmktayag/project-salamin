@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Save, CheckCircle, AlertCircle, User, Briefcase, Settings, Shield, Bell } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ProfileService } from '../utils/ProfileService';
@@ -68,6 +68,8 @@ export default function ProfilePage() {
   });
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [autoSaving, setAutoSaving] = useState(false);
+  const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -95,9 +97,9 @@ export default function ProfilePage() {
 
   const completionScore = editedProfile ? calculateProfileCompletionScore(editedProfile) : 0;
 
-  const handleProfileChange = (field: keyof UserProfile, value: any) => {
+  const handleProfileChange = useCallback((field: keyof UserProfile, value: any) => {
     setEditedProfile(prev => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
 
   const toggleSection = (section: string) => {
@@ -117,7 +119,7 @@ export default function ProfilePage() {
       }
 
       // Save preferences updates
-      if (Object.keys(editedPreferences).length > 0 && editedPreferences.userId) {
+      if (Object.keys(editedPreferences).length > 0) {
         await profileService.updateUserPreferences(user.uid, editedPreferences);
       }
 
@@ -129,6 +131,59 @@ export default function ProfilePage() {
       setSaving(false);
     }
   };
+
+  // Debounce utility function
+  const debounce = (func: (...args: any[]) => void, delay: number) => {
+    let timeoutId: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  // Auto-save function
+  const autoSave = useCallback(async () => {
+    if (!user || saving || autoSaving) return;
+    
+    const hasProfileChanges = Object.keys(editedProfile).length > 0;
+    const hasPreferencesChanges = Object.keys(editedPreferences).length > 0;
+    
+    if (!hasProfileChanges && !hasPreferencesChanges) return;
+
+    try {
+      setAutoSaving(true);
+      
+      // Save profile updates
+      if (hasProfileChanges) {
+        await updateProfile(editedProfile);
+      }
+
+      // Save preferences updates
+      if (hasPreferencesChanges) {
+        await profileService.updateUserPreferences(user.uid, editedPreferences);
+      }
+
+      setLastAutoSave(new Date());
+      // Clear save message after auto-save to avoid confusion
+      setSaveMessage(null);
+    } catch (error) {
+      console.error('Auto-save error:', error);
+      // Don't show error message for auto-save failures to avoid UI noise
+    } finally {
+      setAutoSaving(false);
+    }
+  }, [user, editedProfile, editedPreferences, saving, autoSaving, updateProfile, profileService]);
+
+  // Debounced auto-save with 2-second delay
+  const debouncedAutoSave = useMemo(
+    () => debounce(autoSave, 2000),
+    [autoSave]
+  );
+
+  // Trigger auto-save when profile or preferences change
+  useEffect(() => {
+    debouncedAutoSave();
+  }, [editedProfile, editedPreferences, debouncedAutoSave]);
 
   if (!user) {
     return (
@@ -178,6 +233,25 @@ export default function ProfilePage() {
                 <AlertCircle className="w-5 h-5 mr-2" />
               )}
               {saveMessage.text}
+            </div>
+          </div>
+        )}
+
+        {/* Auto-save Status */}
+        {(autoSaving || lastAutoSave) && (
+          <div className="mb-6 p-3 rounded-md bg-blue-50 border border-blue-200">
+            <div className="flex items-center text-sm text-blue-700">
+              {autoSaving ? (
+                <>
+                  <div className="animate-spin w-4 h-4 mr-2 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                  Auto-saving changes...
+                </>
+              ) : lastAutoSave ? (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
+                  Auto-saved at {lastAutoSave.toLocaleTimeString()}
+                </>
+              ) : null}
             </div>
           </div>
         )}
