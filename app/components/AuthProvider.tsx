@@ -148,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await profileService.createProfile(newUser.uid, {
             email: newUser.email || email,
             displayName: displayName || newUser.displayName || '',
-            photoURL: newUser.photoURL
+            photoURL: newUser.photoURL || undefined
           });
         } catch (profileError) {
           console.error('Error creating user profile:', profileError);
@@ -183,7 +183,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await profileService.createProfile(result.user.uid, {
             email: result.user.email || '',
             displayName: result.user.displayName || '',
-            photoURL: result.user.photoURL
+            photoURL: result.user.photoURL || undefined
           });
         } catch (profileError) {
           console.error('Error creating Google user profile:', profileError);

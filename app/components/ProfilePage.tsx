@@ -10,8 +10,7 @@ import {
   calculateProfileCompletionScore,
   INDUSTRY_OPTIONS,
   JOB_POSITIONS,
-  COMPANY_OPTIONS,
-  CURRENCY_OPTIONS
+  COMPANY_OPTIONS
 } from '../types/user';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
@@ -83,7 +82,9 @@ export default function ProfilePage() {
       if (user) {
         try {
           const prefs = await profileService.getUserPreferences(user.uid);
-          setEditedPreferences(prefs);
+          if (prefs) {
+            setEditedPreferences(prefs);
+          }
         } catch (error) {
           console.error('Failed to load preferences:', error);
         }
@@ -98,9 +99,6 @@ export default function ProfilePage() {
     setEditedProfile(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePreferencesChange = (field: keyof UserPreferences, value: any) => {
-    setEditedPreferences(prev => ({ ...prev, [field]: value }));
-  };
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));

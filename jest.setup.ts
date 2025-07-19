@@ -71,6 +71,11 @@ jest.mock('@/app/lib/firebase/analytics', () => ({
 }));
 
 // Global test utilities
+declare global {
+  var mockFirestoreDoc: (data: any) => any;
+  var mockFirestoreCollection: (docs: any[]) => any;
+}
+
 global.mockFirestoreDoc = (data: any) => ({
   exists: () => !!data,
   data: () => data,
