@@ -486,7 +486,9 @@ describe('AuthProvider', () => {
       // Then sign out (would need sign out button in TestComponent)
       // For now, test that the auth state change to null clears data
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
-        callback(null);
+        if (typeof callback === 'function') {
+          callback(null);
+        }
         return jest.fn();
       });
 
