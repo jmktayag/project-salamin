@@ -48,7 +48,7 @@ Object.defineProperty(window, 'scrollTo', {
 });
 
 // Helper function to render TopNavigation with NavigationProvider
-const renderWithProviders = (initialUser = null) => {
+const renderWithProviders = (initialUser: any = null) => {
   mockUseAuth.user = initialUser;
   
   return render(

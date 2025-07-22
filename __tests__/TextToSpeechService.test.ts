@@ -72,11 +72,11 @@ describe('TextToSpeechService', () => {
 
   describe('constructor', () => {
     it('should throw error when API key is not provided', () => {
-      expect(() => new TextToSpeech('')).toThrow('Gemini API key is required');
+      expect(() => new TextToSpeechService('')).toThrow('Gemini API key is required');
     });
 
     it('should create instance with valid API key', () => {
-      expect(() => new TextToSpeech('valid-key')).not.toThrow();
+      expect(() => new TextToSpeechService('valid-key')).not.toThrow();
     });
   });
 
