@@ -1,4 +1,4 @@
-export type NavigationPage = 'home' | 'interview' | 'summary' | 'history';
+export type NavigationPage = 'home' | 'interview' | 'summary' | 'history' | 'profile';
 
 export type InterviewStep = 'configuration' | 'interview' | 'summary';
 

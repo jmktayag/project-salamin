@@ -52,9 +52,20 @@ Object.defineProperty(window, 'SpeechRecognition', {
   }))
 });
 
+Object.defineProperty(window, 'SpeechRecognition', {
+  writable: true,
+  value: jest.fn().mockImplementation(() => ({
+    start: jest.fn(),
+    stop: jest.fn(),
+    abort: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn()
+  }))
+});
+
 Object.defineProperty(window, 'webkitSpeechRecognition', {
   writable: true,
-  value: window.SpeechRecognition
+  value: (window as any).SpeechRecognition
 });
 
 describe('InterviewOrchestrator', () => {
@@ -135,7 +146,7 @@ describe('InterviewOrchestrator', () => {
 
     it('shows feedback icons for different types', async () => {
       const user = userEvent.setup();
-      const { container } = render(<InterviewCard />);
+      const { container } = render(<InterviewOrchestrator />);
       
       await user.click(screen.getByRole('button', { name: /start your interview/i }));
       
