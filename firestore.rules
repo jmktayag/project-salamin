@@ -1,4 +1,5 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
     
@@ -53,7 +54,19 @@ service cloud.firestore {
       }
     }
     
-    // Interview sessions - existing rules maintained
+    // Interview sessions collection - secure rules for current implementation
+    match /interview_sessions/{sessionId} {
+      // Users can only access their own sessions
+      allow read, write: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      
+      // Allow creation if user is authenticated and sets correct userId
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId
+        && isValidSessionData(request.resource.data);
+    }
+    
+    // Legacy interview sessions path for backward compatibility
     match /interviewSessions/{sessionId} {
       allow read, write: if request.auth != null && 
         request.auth.uid == resource.data.userId;
@@ -77,6 +90,18 @@ service cloud.firestore {
     match /analytics/{document=**} {
       // Read/write access controlled by server-side functions only
       allow read, write: if false;
+    }
+    
+    // Helper function to validate session data structure
+    function isValidSessionData(data) {
+      return data.keys().hasAll(['userId', 'position', 'interviewType', 'status', 'totalQuestions']) &&
+             data.userId is string &&
+             data.position is string &&
+             data.interviewType in ['behavioral', 'technical', 'mixed'] &&
+             data.status in ['in_progress', 'completed', 'abandoned'] &&
+             data.totalQuestions is number &&
+             data.totalQuestions > 0 &&
+             data.totalQuestions <= 50; // Reasonable limit
     }
     
     // Helper functions for validation
